@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { listFiles, deleteFile, generatePublicLink } from "../api/files";
+import { useEffect, useState, useRef } from "react";
+import { listFiles, deleteFile } from "../api/files";
 import { useAuth } from "../context/AuthContext";
-import { shareFilePublic } from "../api/public";
+import { shareFilePublic, unshareFile, shareFileWithUser } from "../api/public";
 import toast from "react-hot-toast";
 import "./styles/FileList.css";
 
@@ -12,26 +12,26 @@ export interface FileItem {
   size: number;
   created_at: string;
   hash: string;
+  visibility?: "private" | "public" | "shared";
 }
 
 type Props = {
   files?: FileItem[];
-  onDelete?: (id: string) => Promise<void>;
-  onShare?: (id: string) => Promise<void>;
   refreshSignal?: number;
   limit?: number;
 };
 
 export default function FileList({
   files: controlledFiles,
-  onDelete,
-  onShare,
   refreshSignal = 0,
   limit,
 }: Props) {
   const { token } = useAuth();
   const [files, setFiles] = useState<FileItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [openVisibility, setOpenVisibility] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
 
   const isControlled = Array.isArray(controlledFiles);
 
@@ -44,7 +44,7 @@ export default function FileList({
       setFiles(fetched);
     } catch (err) {
       console.error("listFiles error:", err);
-      toast.error("Could not fetch files"); // ✅ only error if API fails
+      toast.error("Could not fetch files");
     } finally {
       setLoading(false);
     }
@@ -57,42 +57,57 @@ export default function FileList({
   const handleDelete = async (id: string) => {
     if (!token) return;
     try {
-      if (onDelete) {
-        await onDelete(id);
-      } else {
-        await deleteFile(id, token);
-        await loadFiles();
-      }
+      await deleteFile(id, token);
       toast.success("File deleted");
+      await loadFiles();
     } catch (err) {
       console.error("delete error:", err);
       toast.error("Delete failed");
     }
   };
 
-  const handleShare = async (id: string) => {
+  const handleSetPrivate = async (id: string) => {
+    if (!token) return;
     try {
-      if (!token) return;
-      const res = await shareFilePublic(id, token);
-      const link = res.data.link; 
-      await navigator.clipboard.writeText(link);
-      toast.success("Public link copied to clipboard!");
-      toast.success(
-        (t) => (
-          <span>
-            Link copied! <a href={link} target="_blank" className="underline text-blue-400">Open</a>
-          </span>
-        ),
-        { duration: 5000 }
-      );
+      await unshareFile(id, token);
+      toast.success("File set to private");
+      await loadFiles();
     } catch (err) {
-      console.error("Share public error:", err);
-      toast.error("Failed to share publicly");
+      console.error("unshare error:", err);
+      toast.error("Failed to make private");
     }
-  }
+  };
+
+  const handleSetPublic = async (id: string) => {
+    if (!token) return;
+    try {
+      const res = await shareFilePublic(id, token);
+      const link = res.data.link;
+      await navigator.clipboard.writeText(link);
+      toast.success("File shared publicly. Link copied!");
+      await loadFiles();
+    } catch (err) {
+      console.error("share error:", err);
+      toast.error("Failed to make public");
+    }
+  };
+
+  const handleShareWithUser = async (id: string) => {
+    if (!token || !email) return toast.error("Enter an email");
+    try {
+      await shareFileWithUser(id, email, token);
+      toast.success(`Shared with ${email}`);
+      setEmail("");
+      await loadFiles();
+    } catch (err) {
+      console.error("share with user error:", err);
+      toast.error("Failed to share with user");
+    }
+  };
 
   const usedFiles = isControlled ? controlledFiles! : files;
-  const displayed = typeof limit === "number" ? usedFiles.slice(0, limit) : usedFiles;
+  const displayed =
+    typeof limit === "number" ? usedFiles.slice(0, limit) : usedFiles;
 
   if (loading && !isControlled) {
     return <p className="text-gray-500">Loading files...</p>;
@@ -110,7 +125,7 @@ export default function FileList({
           <th>Type</th>
           <th>Size</th>
           <th>Uploaded At</th>
-          <th>Actions</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -123,17 +138,53 @@ export default function FileList({
             <td>{formatFileSize(file.size)}</td>
             <td>{new Date(file.created_at).toLocaleString()}</td>
             <td className="actions">
-              <button
-                onClick={() => handleShare(file.id)} 
-              >
-                🔗
-              </button>
-              <button
-                onClick={() => handleDelete(file.id)}
-                className="btn-delete"
-              >
-                🗑
-              </button>
+              <div className="dropdown">
+                <button
+                  className="menu-btn"
+                  onClick={() =>
+                    setOpenMenu(openMenu === file.id ? null : file.id)
+                  }
+                >
+                  ⋮
+                </button>
+                {openMenu === file.id && (
+                  <div className="dropdown-menu">
+                    <button onClick={() => handleDelete(file.id)}>
+                      🗑 Delete
+                    </button>
+                    <button
+                      onClick={() =>
+                        setOpenVisibility(
+                          openVisibility === file.id ? null : file.id
+                        )
+                      }
+                    >
+                      🔒 Change Visibility ▸
+                    </button>
+                    {openVisibility === file.id && (
+                      <div className="submenu">
+                        <button onClick={() => handleSetPrivate(file.id)}>
+                          🔒 Private
+                        </button>
+                        <button onClick={() => handleSetPublic(file.id)}>
+                          🌍 Open to All
+                        </button>
+                        <div className="share-user">
+                          <input
+                            type="email"
+                            placeholder="Enter email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                          />
+                          <button onClick={() => handleShareWithUser(file.id)}>
+                            📧 Share
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </td>
           </tr>
         ))}

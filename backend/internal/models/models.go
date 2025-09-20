@@ -33,6 +33,8 @@ type File struct {
     CreatedAt string `json:"created_at"`
     Hash      string `json:"hash"`
     RefCount  int    `json:"ref_count"`
+    Visibility string   `json:"visibility"`         
+    SharedWith []string `json:"shared_with,omitempty"`
 }
 
 type FileBlob struct {

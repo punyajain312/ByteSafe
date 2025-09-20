@@ -46,6 +46,21 @@ func (r *FileRepo) ListFiles(userID string) ([]models.File, error) {
     return files, nil 
 }
 
+func (r *FileRepo) UpdateVisibility(fileID, visibility string) error {
+    _, err := r.DB.Exec(`
+        UPDATE files SET visibility = $1 WHERE id = $2
+    `, visibility, fileID)
+    return err
+}
+
+// Share with specific user
+func (r *FileRepo) ShareWithUser(fileID, email string) error {
+    _, err := r.DB.Exec(`
+        INSERT INTO file_shares (file_id, shared_with_email) VALUES ($1, $2)
+    `, fileID, email)
+    return err
+}
+
 func (r *FileRepo) GetFileBlob(tx *sql.Tx, fileID, userID string) (string, string, error) {
     var blobID, blobPath string
     err := tx.QueryRow(`

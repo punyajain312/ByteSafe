@@ -28,3 +28,7 @@ func (s *ShareService) GetShareByID(id string) (*models.PublicFile, error) {
 func (s *ShareService) IncrementDownload(id string) error {
     return s.Repo.IncrementDownloadCount(id)
 }
+
+func (s *ShareService) RemoveShare(fileID, ownerID string) error {
+    return s.Repo.RemoveShare(fileID, ownerID)
+}

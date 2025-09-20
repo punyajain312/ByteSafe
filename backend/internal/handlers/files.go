@@ -52,3 +52,31 @@ func (h *FileHandler) DeleteFile(w http.ResponseWriter, r *http.Request) {
 
     w.WriteHeader(http.StatusNoContent)
 }
+
+func (h *FileHandler) UpdateVisibility(w http.ResponseWriter, r *http.Request) {
+    fileID := r.URL.Query().Get("id")
+    var req struct {
+        Visibility string `json:"visibility"`
+        Email      string `json:"email,omitempty"`
+    }
+
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        http.Error(w, "invalid request", http.StatusBadRequest)
+        return
+    }
+
+    if req.Visibility == "shared" && req.Email != "" {
+        // add to file_shares
+        if err := h.Service.ShareWithUser(fileID, req.Email); err != nil {
+            http.Error(w, "failed to share with user", http.StatusInternalServerError)
+            return
+        }
+    }
+
+    if err := h.Service.UpdateVisibility(fileID, req.Visibility); err != nil {
+        http.Error(w, "failed to update visibility", http.StatusInternalServerError)
+        return
+    }
+
+    json.NewEncoder(w).Encode(map[string]string{"status": "updated"})
+}

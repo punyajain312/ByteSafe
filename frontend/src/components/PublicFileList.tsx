@@ -1,5 +1,3 @@
-// src/components/PublicFileList.tsx
-import React from "react";
 import "./styles/FileList.css"; // reuse your existing styles
 
 export interface PublicFile {

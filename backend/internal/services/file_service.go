@@ -50,3 +50,11 @@ func (s *FileService) DeleteFile(userID, fileID string) error {
 
     return tx.Commit()
 }
+
+func (s *FileService) UpdateVisibility(fileID, visibility string) error {
+    return s.Repo.UpdateVisibility(fileID, visibility)
+}
+
+func (s *FileService) ShareWithUser(fileID, email string) error {
+    return s.Repo.ShareWithUser(fileID, email)
+}

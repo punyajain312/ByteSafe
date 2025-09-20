@@ -14,17 +14,65 @@ func NewShareRepo(db *sql.DB) *ShareRepo {
     return &ShareRepo{DB: db}
 }
 
-// Create a new share
+
 func (r *ShareRepo) CreateShare(fileID, ownerID string) (string, error) {
+    // Check if already shared
+    var existingID string
+    err := r.DB.QueryRow(`
+        SELECT id FROM public_files
+        WHERE file_id = $1 AND owner_id = $2
+    `, fileID, ownerID).Scan(&existingID)
+
+    if err == nil {
+        // already exists → increment ref_count
+        _, err = r.DB.Exec(`
+            UPDATE public_files
+            SET ref_count = ref_count + 1
+            WHERE id = $1
+        `, existingID)
+        if err != nil {
+            return "", err
+        }
+        return existingID, nil
+    }
+
+    // else → create new
     id := uuid.New().String()
-    _, err := r.DB.Exec(`
-        INSERT INTO public_files (id, file_id, owner_id, download_count, created_at)
-        VALUES ($1, $2, $3, 0, NOW())
+    _, err = r.DB.Exec(`
+        INSERT INTO public_files (id, file_id, owner_id, ref_count, download_count, created_at)
+        VALUES ($1, $2, $3, 1, 0, NOW())
     `, id, fileID, ownerID)
     if err != nil {
         return "", err
     }
     return id, nil
+}
+func (r *ShareRepo) RemoveShare(fileID, ownerID string) error {
+    var refCount int
+    err := r.DB.QueryRow(`
+        SELECT ref_count FROM public_files
+        WHERE file_id = $1 AND owner_id = $2
+    `, fileID, ownerID).Scan(&refCount)
+    if err != nil {
+        return err
+    }
+
+    if refCount > 1 {
+        // just decrement
+        _, err = r.DB.Exec(`
+            UPDATE public_files
+            SET ref_count = ref_count - 1
+            WHERE file_id = $1 AND owner_id = $2
+        `, fileID, ownerID)
+        return err
+    }
+
+    // else delete row
+    _, err = r.DB.Exec(`
+        DELETE FROM public_files
+        WHERE file_id = $1 AND owner_id = $2
+    `, fileID, ownerID)
+    return err
 }
 
 // List all public shares with file info

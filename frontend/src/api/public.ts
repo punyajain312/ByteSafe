@@ -14,3 +14,15 @@ export const listPublicFiles = () =>
 // ✅ Download/access public file by share ID
 export const downloadPublicFile = (shareId: string) =>
   window.open(`${API_URL}/public/file?id=${shareId}`, "_blank"); // ✅ use id not token
+
+// DELETE /share?id=<fileId>
+export const unshareFile = (fileId: string, token: string) =>
+  axios.delete(`${API_URL}/share?id=${fileId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+});
+
+  // Share with a particular user
+export const shareFileWithUser = (fileId: string, email: string, token: string) =>
+  axios.post(`${API_URL}/share-with-user`, { file_id: fileId, email }, {
+    headers: { Authorization: `Bearer ${token}` },
+});
