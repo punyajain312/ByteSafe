@@ -2,6 +2,7 @@ package models
 
 import (
     "github.com/golang-jwt/jwt/v5"
+    "time"
 )
 
 
@@ -68,6 +69,19 @@ type ShareRequest struct {
     FolderID   string `json:"folder_id,omitempty"`
     Visibility string `json:"visibility"`
     SharedWith string `json:"shared_with,omitempty"`
+}
+
+// PublicFile maps to a row in the public_files table (plus joined info)
+type PublicFile struct {
+    ID            string    `json:"id"`
+    FileID        string    `json:"file_id"`
+    OwnerID       string    `json:"owner_id"`
+    Filename      string    `json:"filename,omitempty"`   // from files join
+    MimeType      string    `json:"mime_type,omitempty"`  // from files join
+    Size          int64     `json:"size,omitempty"`       // from files join
+    Visibility    string    `json:"visibility"`
+    DownloadCount int       `json:"download_count"`
+    CreatedAt     time.Time `json:"created_at"`
 }
 
 type PublicStats struct {

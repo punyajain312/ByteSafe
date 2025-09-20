@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import SharedInput from "./SharedInput";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import "./styles/LoginForm.css";
 
 export default function LoginForm() {
   const { login: setAuth } = useAuth();
@@ -18,22 +19,22 @@ export default function LoginForm() {
       const res = await login(email, password);
       setAuth(res.data.token); // save token in context/localStorage
       toast.success("Login successful 🎉");
-      navigate("/dashboard"); // ✅ redirect here
+      navigate("/dashboard"); 
     } catch (err: any) {
       console.error("Login error:", err);
       toast.error("Login failed ❌");
     }
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="text-xl font-bold">Login</h2>
+   return (
+    <form onSubmit={handleSubmit} className="login-form">
       <SharedInput
         type="email"
         placeholder="Email"
         value={email}
         onChange={setEmail}
         label="Email Address"
+        className="input-field"
       />
       <SharedInput
         type="password"
@@ -41,11 +42,9 @@ export default function LoginForm() {
         value={password}
         onChange={setPassword}
         label="Password"
+        className="input-field"
       />
-      <button
-        type="submit"
-        className="w-full bg-blue-500 text-white p-2 rounded"
-      >
+      <button type="submit" className="login-button">
         Login
       </button>
     </form>

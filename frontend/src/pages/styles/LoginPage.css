@@ -1,0 +1,128 @@
+/* Page wrapper */
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #0a0f1e, #111a2d, #0a0f1e);
+  color: #e2e8f0;
+}
+
+/* Navbar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 3rem;
+  background: rgba(27, 37, 64, 0.9);
+  border-bottom: 1px solid #2a3b6d;
+}
+
+.navbar-logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #60a5fa;
+}
+
+.navbar-auth {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-btn {
+  padding: 12px 25px;
+  border-radius: 8px;
+  background: transparent;
+  color: #dbeafe;
+  border: 1px solid rgba(99,102,241,0.12);
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.nav-btn:hover {
+  background: #2a3b6d;
+}
+
+.nav-btn-primary {
+  background: linear-gradient(to right, #3b82f6, #4f46e5);
+  color: white;
+  border: none;
+}
+
+.nav-btn-primary:hover {
+  opacity: 0.9;
+}
+
+/* Split container */
+.login-container {
+  flex: 1;
+  display: flex;
+}
+
+/* Left creative section */
+.login-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background: linear-gradient(160deg, #1e293b, #0f172a);
+  color: #e2e8f0;
+  text-align: center;
+}
+
+.creative-heading {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #60a5fa;
+  margin-bottom: 1rem;
+}
+
+.creative-text {
+  font-size: 1rem;
+  max-width: 300px;
+  line-height: 1.6;
+  color: #cbd5e1;
+}
+
+/* Right login section */
+.login-right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-card {
+  background: #1b2540;
+  padding: 2rem;
+  border-radius: 16px;
+  width: 380px;
+  border: 1px solid #2a3b6d;
+}
+
+.login-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  color: #60a5fa;
+  margin-bottom: 1.5rem;
+}
+
+.login-footer {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+}
+
+.signup-link {
+  color: #60a5fa;
+  text-decoration: none;
+}
+
+.signup-link:hover {
+  text-decoration: underline;
+}

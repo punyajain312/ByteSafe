@@ -1,4 +1,5 @@
-import { Link, Routes, Route, useNavigate } from "react-router-dom";
+// src/pages/Dashboard.tsx
+import { Link, Routes, Route, useNavigate, NavLink } from "react-router-dom";
 import FileUploadForm from "../components/FileUploadForm";
 import FileList, { type FileItem } from "../components/FileList";
 import SearchFilter from "../components/SearchFilter";
@@ -6,8 +7,10 @@ import { useState, useEffect } from "react";
 import { listFiles, deleteFile, generatePublicLink } from "../api/files";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
+import "./styles/Dashboard.css"; // new stylesheet (create this file)
 
 export default function Dashboard() {
+  // === (I kept your original state & functions exactly, only moved them)
   const { token } = useAuth();
   const navigate = useNavigate();
 
@@ -28,6 +31,17 @@ export default function Dashboard() {
   useEffect(() => {
     loadFiles();
   }, [token, refresh]);
+
+  function formatFileSize(bytes?: number) {
+    if (!bytes || bytes === 0) return "—";
+    const kb = bytes / 1024;
+    const mb = bytes / (1024 * 1024);
+    const gb = bytes / (1024 * 1024 * 1024);
+
+    if (mb < 1) return kb.toFixed(2) + " KB";
+    if (mb >= 1000) return gb.toFixed(2) + " GB";
+    return mb.toFixed(2) + " MB";
+  }
 
   const handleDelete = async (id: string) => {
     if (!token) return;
@@ -54,89 +68,163 @@ export default function Dashboard() {
 
   const onUploadSuccess = () => {
     setRefresh((r) => r + 1); // refresh files
-    navigate("/dashboard"); // ✅ redirect to dashboard home
+    navigate("/dashboard"); // ✅ keep your redirect
   };
 
+  // small helpers to show stats in sidebar
+  const totalFiles = files.length;
+  const totalBytes = files.reduce((acc, f) => acc + (Number((f as any).size) || 0), 0);
+  const TOTAL_QUOTA_BYTES = 15 * 1024 * 1024 * 1024; // 15 GB quota (display only)
+  const usedPercent = Math.min(100, Math.round((totalBytes / TOTAL_QUOTA_BYTES) * 100));
+
+  function formatBytes(bytes: number) {
+    if (!bytes) return "0 B";
+    const k = 1024;
+    const sizes = ["B", "KB", "MB", "GB", "TB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  }
+
+  const handleLogout = () => {
+    // safe minimal logout (if you have a logout in context you can swap this)
+    try {
+      localStorage.removeItem("token");
+    } catch (e) {
+      console.error(e);
+    }
+    navigate("/login");
+    // note: this doesn't change your auth context — if you have a logout method in useAuth,
+    // replace with that for a clean context update.
+  };
+
+  // === JSX (restructured for left sidebar + top nav + content area)
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-5xl mx-auto space-y-6">
-        <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+    <div className="dashboard-root">
+      {/* LEFT SIDEBAR */}
+      <aside className="dashboard-sidebar">
+        <div className="sidebar-brand">MyApp</div>
 
-        {/* Navigation */}
-        <div className="flex space-x-4 mb-6">
-          <Link to="/dashboard/upload" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-            Upload File
-          </Link>
-          <Link to="/dashboard/search" className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-            Search
-          </Link>
-          <Link to="/dashboard/list" className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">
-            My Files
-          </Link>
-          <Link to="/dashboard/public" className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">
-            Public Files
-          </Link>
+        <div className="sidebar-section">
+          <h4 className="sidebar-heading">Storage</h4>
+          <div className="storage-meta">
+            <strong>{formatBytes(totalBytes)}</strong>
+            <span className="muted"> / 15 GB</span>
+          </div>
+          <div className="storage-bar">
+            <div className="storage-used" style={{ width: `${usedPercent}%` }} />
+          </div>
+          <div className="storage-percent">{usedPercent}% used</div>
         </div>
 
-        <div className="bg-white p-4 rounded shadow">
-          <Routes>
-            {/* Dashboard Home (Recent Files preview) */}
-            <Route
-              path="/"
-              element={
-                <div>
-                  <h2 className="text-lg font-bold mb-4">Recent Files</h2>
-                  <FileList files={files} onDelete={handleDelete} onShare={handleShare} limit={5} />
-                </div>
-              }
-            />
-
-            {/* Upload Page */}
-            <Route
-              path="upload"
-              element={
-                <div>
-                  <h2 className="text-lg font-bold mb-4">Upload Files</h2>
-                  <FileUploadForm onUploadSuccess={onUploadSuccess} />
-                </div>
-              }
-            />
-
-            {/* Search Page */}
-            <Route
-              path="search"
-              element={
-                <div>
-                  <h2 className="text-lg font-bold mb-4">Search Files</h2>
-                  <SearchFilter onResults={setSearchResults} />
-                  {searchResults.length > 0 && (
-                    <div className="mt-4">
-                      <h3 className="font-bold">Search Results</h3>
-                      <ul className="mt-2 space-y-2">
-                        {searchResults.map((f, i) => (
-                          <li key={i} className="p-2 border rounded flex justify-between items-center">
-                            {f.filename} ({f.mime_type}) - {f.size} bytes
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              }
-            />
-
-            {/* Full File List */}
-            <Route
-              path="list"
-              element={
-                <div>
-                  <h2 className="text-lg font-bold mb-4">My Files</h2>
-                  <FileList files={files} onDelete={handleDelete} onShare={handleShare} />
-                </div>
-              }
-            />
-          </Routes>
+        <div className="sidebar-section">
+          <h4 className="sidebar-heading">Quick Stats</h4>
+          <ul className="stats-list">
+            <li><strong>{totalFiles}</strong> Files</li>
+            <li><strong>{files.filter(f => (f as any).is_public).length}</strong> Public</li>
+            <li><strong>{files.filter(f => (f as any).shared).length}</strong> Shared</li>
+          </ul>
         </div>
+
+        <div className="sidebar-section">
+          <h4 className="sidebar-heading">Recent</h4>
+          <ul className="recent-list">
+            {files.slice(0, 6).map((f) => (
+              <li key={f.id} title={(f as any).filename}>
+                <span className="recent-name">{(f as any).filename || (f as any).name}</span>
+                <span className="recent-meta">{formatBytes(Number((f as any).size) || 0)}</span>
+              </li>
+            ))}
+            {files.length === 0 && <li className="muted">No recent files</li>}
+          </ul>
+        </div>
+      </aside>
+
+      {/* MAIN AREA */}
+      <div className="dashboard-main">
+        {/* TOP NAVBAR */}
+        
+      <header className="dashboard-topnav">
+        <NavLink to="/dashboard" end  className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>
+          Home
+        </NavLink>
+        <NavLink to="/dashboard/upload" className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>
+          Upload
+        </NavLink>
+        <NavLink to="/dashboard/search" className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>
+          Search
+        </NavLink>
+        <NavLink to="/dashboard/list" className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>
+          My Files
+        </NavLink>
+        <NavLink to="/dashboard/public" className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>
+          Public Files
+        </NavLink>
+        <button className="btn logout" onClick={handleLogout}>Logout</button>
+      </header>
+
+        {/* CONTENT CARD (keeps your Routes structure exactly) */}
+        <main className="dashboard-content">
+          <div className="content-card">
+            <Routes>
+              {/* Dashboard Home (Recent Files preview) */}
+              <Route
+                path="/"
+                element={
+                  <div>
+                    <h2 className="section-title">Recent Files</h2>
+                    <FileList files={files} limit={10} onDelete={handleDelete} onShare={handleShare} />
+                  </div>
+                }
+              />
+
+              {/* Upload Page */}
+              <Route
+                path="upload"
+                element={
+                  <div>
+                    <h2 className="section-title">Upload Files</h2>
+                    <FileUploadForm onUploadSuccess={onUploadSuccess} />
+                  </div>
+                }
+              />
+
+              {/* Search Page */}
+              <Route
+                path="search"
+                element={
+                  <div>
+                    <h2 className="section-title">Search Files</h2>
+                    {/* we keep the SearchFilter usage exactly like your original code */}
+                    <SearchFilter onResults={setSearchResults} />
+                    {searchResults.length > 0 && (
+                      <div className="mt-4">
+                        <h3 className="font-bold">Search Results</h3>
+                        <ul className="search-results">
+                          {searchResults.map((f, i) => (
+                            <li key={i} className="search-item">
+                              {f.filename} ({f.mime_type}) - {f.size} bytes
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                }
+              />
+
+              {/* Full File List */}
+              <Route
+                path="list"
+                element={
+                  <div>
+                    <h2 className="section-title">My Files</h2>
+                    <FileList files={files} onDelete={handleDelete} onShare={handleShare} />
+                  </div>
+                }
+              />
+            </Routes>
+          </div>
+        </main>
       </div>
     </div>
   );

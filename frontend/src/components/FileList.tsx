@@ -3,6 +3,7 @@ import { listFiles, deleteFile, generatePublicLink } from "../api/files";
 import { useAuth } from "../context/AuthContext";
 import { shareFilePublic } from "../api/public";
 import toast from "react-hot-toast";
+import "./styles/FileList.css";
 
 export interface FileItem {
   id: string;
@@ -71,21 +72,17 @@ export default function FileList({
   };
 
   const handleShare = async (id: string) => {
-    if (!token) return;
     try {
-      if (onShare) {
-        await onShare(id);
-      } else {
-        const res = await generatePublicLink(id, token);
-        const link = res.data.link;
-        await navigator.clipboard.writeText(link);
-        toast.success("Public link copied!");
-      }
+      if (!token) return;
+      const res = await shareFilePublic(id, token);
+      const link = window.location.origin + res.data.link;
+      await navigator.clipboard.writeText(link);
+      toast.success("Public link copied to clipboard!");
     } catch (err) {
-      console.error("share error:", err);
-      toast.error("Failed to generate share link");
+      console.error("Share public error:", err);
+      toast.error("Failed to share publicly");
     }
-  };
+  }
 
   const usedFiles = isControlled ? controlledFiles! : files;
   const displayed = typeof limit === "number" ? usedFiles.slice(0, limit) : usedFiles;
@@ -99,46 +96,53 @@ export default function FileList({
   }
 
   return (
-    <ul className="space-y-2">
-      {displayed.map((file) => (
-        <li
-          key={file.id}
-          className="p-2 border rounded flex justify-between items-center"
-        >
-          <div>
-            <p className="font-medium">{file.filename}</p>
-            <p className="text-sm text-gray-500">
-              {file.mime_type} · {file.size} bytes ·{" "}
-              {new Date(file.created_at).toLocaleString()}
-            </p>
-          </div>
-          <div className="space-x-2">
-            <button
-              onClick={async () => {
-                try {
-                  if (!token) return;
-                  const res = await shareFilePublic(file.id, token);
-                  const link = window.location.origin + res.data.link;
-                  await navigator.clipboard.writeText(link);
-                  toast.success("Public link copied to clipboard!");
-                } catch (err) {
-                  console.error("Share public error:", err);
-                  toast.error("Failed to share publicly");
-                }
-              }}
-              className="px-2 py-1 bg-purple-500 text-white text-sm rounded hover:bg-purple-600"
-            >
-              Share Publicly
-            </button>
-            <button
-              onClick={() => handleDelete(file.id)}
-              className="px-2 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
-            >
-              Delete
-            </button>
-          </div>
-        </li>
-      ))}
-    </ul>
+    <table className="file-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Size</th>
+          <th>Uploaded At</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {displayed.map((file) => (
+          <tr key={file.id}>
+            <td className="file-name">
+              {file.mime_type?.includes("folder") ? "📁" : "📄"} {file.filename}
+            </td>
+            <td>{file.mime_type}</td>
+            <td>{formatFileSize(file.size)}</td>
+            <td>{new Date(file.created_at).toLocaleString()}</td>
+            <td className="actions">
+              <button
+                onClick={() => handleShare(file.id)} 
+                className="btn-share"
+              >
+                🔗
+              </button>
+              <button
+                onClick={() => handleDelete(file.id)}
+                className="btn-delete"
+              >
+                🗑
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
+}
+
+function formatFileSize(bytes?: number) {
+  if (!bytes || bytes === 0) return "—";
+  const kb = bytes / 1024;
+  const mb = bytes / (1024 * 1024);
+  const gb = bytes / (1024 * 1024 * 1024);
+
+  if (mb < 1) return kb.toFixed(2) + " KB";
+  if (mb >= 1000) return gb.toFixed(2) + " GB";
+  return mb.toFixed(2) + " MB";
 }

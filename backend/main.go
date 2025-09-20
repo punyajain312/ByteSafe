@@ -69,8 +69,9 @@ func main() {
 	mux.Handle("/search", middleware.AuthMiddleware(http.HandlerFunc(searchHandler.SearchFiles)))
 	mux.Handle("/stats", middleware.AuthMiddleware(http.HandlerFunc(statsHandler.GetStats)))
 	mux.Handle("/share", middleware.AuthMiddleware(http.HandlerFunc(shareHandler.CreateShare)))
-	mux.Handle("/share/access", http.HandlerFunc(shareHandler.AccessShare))
-	mux.Handle("/share/stats", http.HandlerFunc(shareHandler.PublicStats))
+	mux.HandleFunc("/public/list", shareHandler.ListShares)
+	mux.HandleFunc("/public/file", shareHandler.AccessShare)
+	
 
 	// Admin routes
 	mux.Handle("/admin/users", middleware.AuthMiddleware(middleware.AdminOnly(http.HandlerFunc(adminHandler.ListUsers))))
