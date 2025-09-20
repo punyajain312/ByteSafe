@@ -2,11 +2,13 @@ import { useState, type DragEvent } from "react";
 import { uploadFiles } from "../api/files";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
+import "../pages/styles/UploadPage.css";
 
 export default function FileUploadForm({
   onUploadSuccess,
 }: {
   onUploadSuccess: () => void;
+  disabled?: boolean;
 }) {
   const { token } = useAuth();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -34,7 +36,7 @@ export default function FileUploadForm({
       await uploadFiles(selectedFiles, token);
       toast.success("Upload successful ✅");
       setSelectedFiles([]);
-      onUploadSuccess(); // ✅ tell parent (Dashboard) to refresh + redirect
+      onUploadSuccess();
     } catch (err: any) {
       console.error("Upload error:", err.response || err.message);
       toast.error("Upload failed ❌");
@@ -44,32 +46,48 @@ export default function FileUploadForm({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="upload-form">
       <div
         onDrop={handleDrop}
         onDragOver={handleDragOver}
-        className="w-full p-6 border-2 border-dashed rounded-lg text-center bg-gray-50 hover:bg-gray-100 cursor-pointer"
+        className="dropzone"
       >
         Drag & Drop files here
       </div>
 
-      <input type="file" multiple onChange={handleFileChange} className="w-full" />
+      <input
+        id="file-upload"
+        type="file"
+        multiple
+        onChange={handleFileChange}
+        className="file-input-hidden"
+      />
 
-      {selectedFiles.length > 0 && (
-        <ul className="text-sm text-gray-600">
-          {selectedFiles.map((f, i) => (
-            <li key={i}>{f.name}</li>
-          ))}
-        </ul>
-      )}
-
-      <button
-        onClick={handleUpload}
-        disabled={uploading || selectedFiles.length === 0}
-        className="w-full bg-blue-500 text-white p-2 rounded disabled:bg-gray-400"
-      >
-        {uploading ? "Uploading..." : "Upload"}
-      </button>
+      {/* Custom styled button */}
+      <div className="buttons">
+        <label htmlFor="file-upload" className="file-upload-btn">
+          Select Files
+        </label>
+        <button
+          onClick={handleUpload}
+          disabled={uploading || selectedFiles.length === 0}
+          className={`upload-btn ${uploading || selectedFiles.length === 0 ? "disabled" : ""}`}
+        >
+          {uploading ? "Uploading..." : "Upload"}
+        </button>
+      </div>
+      <div className="buttons">
+        {selectedFiles.length > 0 && (
+          <ul className="file-list">
+            {selectedFiles.map((f, i) => (
+              <li key={i}>{f.name}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <div className="buttons">
+        
+      </div>
     </div>
   );
 }

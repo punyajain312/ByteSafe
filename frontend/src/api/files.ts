@@ -16,11 +16,11 @@ export const listFiles = (token: string) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
-export const searchFiles = (params: Record<string, string>, token: string) =>
-  axios.get(`${API_URL}/search`, {
-    headers: { Authorization: `Bearer ${token}` },
-    params,
+export async function searchFiles(filters: any, token: string) {
+  return axios.post(`${API_URL}/search`, filters, {
+    headers: { Authorization: `Bearer ${token}` }
   });
+}
 
 export const deleteFile = (id: string, token: string) =>
   axios.delete(`${API_URL}/delete?id=${id}`, {

@@ -52,7 +52,6 @@ export default function FileList({
 
   useEffect(() => {
     if (!isControlled) loadFiles();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, refreshSignal]);
 
   const handleDelete = async (id: string) => {
@@ -118,7 +117,6 @@ export default function FileList({
             <td className="actions">
               <button
                 onClick={() => handleShare(file.id)} 
-                className="btn-share"
               >
                 🔗
               </button>

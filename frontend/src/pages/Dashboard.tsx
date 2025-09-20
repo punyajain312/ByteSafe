@@ -1,5 +1,5 @@
 // src/pages/Dashboard.tsx
-import { Link, Routes, Route, useNavigate, NavLink } from "react-router-dom";
+import { Routes, Route, useNavigate, NavLink } from "react-router-dom";
 import FileUploadForm from "../components/FileUploadForm";
 import FileList, { type FileItem } from "../components/FileList";
 import SearchFilter from "../components/SearchFilter";
@@ -7,10 +7,9 @@ import { useState, useEffect } from "react";
 import { listFiles, deleteFile, generatePublicLink } from "../api/files";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
-import "./styles/Dashboard.css"; // new stylesheet (create this file)
+import "./styles/Dashboard.css";
 
 export default function Dashboard() {
-  // === (I kept your original state & functions exactly, only moved them)
   const { token } = useAuth();
   const navigate = useNavigate();
 
@@ -31,17 +30,6 @@ export default function Dashboard() {
   useEffect(() => {
     loadFiles();
   }, [token, refresh]);
-
-  function formatFileSize(bytes?: number) {
-    if (!bytes || bytes === 0) return "—";
-    const kb = bytes / 1024;
-    const mb = bytes / (1024 * 1024);
-    const gb = bytes / (1024 * 1024 * 1024);
-
-    if (mb < 1) return kb.toFixed(2) + " KB";
-    if (mb >= 1000) return gb.toFixed(2) + " GB";
-    return mb.toFixed(2) + " MB";
-  }
 
   const handleDelete = async (id: string) => {
     if (!token) return;
@@ -67,14 +55,14 @@ export default function Dashboard() {
   };
 
   const onUploadSuccess = () => {
-    setRefresh((r) => r + 1); // refresh files
-    navigate("/dashboard"); // ✅ keep your redirect
+    setRefresh((r) => r + 1);
+    navigate("/dashboard");
   };
 
-  // small helpers to show stats in sidebar
+  // === Storage quota logic ===
   const totalFiles = files.length;
   const totalBytes = files.reduce((acc, f) => acc + (Number((f as any).size) || 0), 0);
-  const TOTAL_QUOTA_BYTES = 15 * 1024 * 1024 * 1024; // 15 GB quota (display only)
+  const TOTAL_QUOTA_BYTES = 15 * 1024 * 1024 * 1024; // 15 GB quota
   const usedPercent = Math.min(100, Math.round((totalBytes / TOTAL_QUOTA_BYTES) * 100));
 
   function formatBytes(bytes: number) {
@@ -86,18 +74,14 @@ export default function Dashboard() {
   }
 
   const handleLogout = () => {
-    // safe minimal logout (if you have a logout in context you can swap this)
     try {
       localStorage.removeItem("token");
     } catch (e) {
       console.error(e);
     }
     navigate("/login");
-    // note: this doesn't change your auth context — if you have a logout method in useAuth,
-    // replace with that for a clean context update.
   };
 
-  // === JSX (restructured for left sidebar + top nav + content area)
   return (
     <div className="dashboard-root">
       {/* LEFT SIDEBAR */}
@@ -142,31 +126,29 @@ export default function Dashboard() {
       {/* MAIN AREA */}
       <div className="dashboard-main">
         {/* TOP NAVBAR */}
-        
-      <header className="dashboard-topnav">
-        <NavLink to="/dashboard" end  className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>
-          Home
-        </NavLink>
-        <NavLink to="/dashboard/upload" className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>
-          Upload
-        </NavLink>
-        <NavLink to="/dashboard/search" className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>
-          Search
-        </NavLink>
-        <NavLink to="/dashboard/list" className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>
-          My Files
-        </NavLink>
-        <NavLink to="/dashboard/public" className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>
-          Public Files
-        </NavLink>
-        <button className="btn logout" onClick={handleLogout}>Logout</button>
-      </header>
+        <header className="dashboard-topnav">
+          <NavLink to="/dashboard" end className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>
+            Home
+          </NavLink>
+          <NavLink to="/dashboard/upload" className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>
+            Upload
+          </NavLink>
+          <NavLink to="/dashboard/search" className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>
+            Search
+          </NavLink>
+          <NavLink to="/dashboard/list" className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>
+            My Files
+          </NavLink>
+          <NavLink to="/dashboard/public" className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>
+            Public Files
+          </NavLink>
+          <button className="btn logout" onClick={handleLogout}>Logout</button>
+        </header>
 
-        {/* CONTENT CARD (keeps your Routes structure exactly) */}
+        {/* CONTENT CARD */}
         <main className="dashboard-content">
           <div className="content-card">
             <Routes>
-              {/* Dashboard Home (Recent Files preview) */}
               <Route
                 path="/"
                 element={
@@ -177,24 +159,29 @@ export default function Dashboard() {
                 }
               />
 
-              {/* Upload Page */}
               <Route
                 path="upload"
                 element={
                   <div>
                     <h2 className="section-title">Upload Files</h2>
-                    <FileUploadForm onUploadSuccess={onUploadSuccess} />
+                    <FileUploadForm
+                      onUploadSuccess={onUploadSuccess}
+                      disabled={totalBytes >= TOTAL_QUOTA_BYTES} // ✅ quota check
+                    />
+                    {totalBytes >= TOTAL_QUOTA_BYTES && (
+                      <p className="text-red-500 mt-2">
+                        You have reached the 15 GB storage limit. Please delete files to free up space.
+                      </p>
+                    )}
                   </div>
                 }
               />
 
-              {/* Search Page */}
               <Route
                 path="search"
                 element={
                   <div>
                     <h2 className="section-title">Search Files</h2>
-                    {/* we keep the SearchFilter usage exactly like your original code */}
                     <SearchFilter onResults={setSearchResults} />
                     {searchResults.length > 0 && (
                       <div className="mt-4">
@@ -212,7 +199,6 @@ export default function Dashboard() {
                 }
               />
 
-              {/* Full File List */}
               <Route
                 path="list"
                 element={

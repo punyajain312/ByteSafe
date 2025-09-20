@@ -1,40 +1,49 @@
 package handlers
 
 import (
-    "encoding/json"
-    "net/http"
+	"encoding/json"
+	"fmt"
+	"net/http"
 
-    "balkanid-capstone/internal/services"
+	"balkanid-capstone/internal/services"
 )
 
 type SearchHandler struct {
-    Service *services.SearchService
+	Service *services.SearchService
 }
 
 func NewSearchHandler(service *services.SearchService) *SearchHandler {
-    return &SearchHandler{Service: service}
+	return &SearchHandler{Service: service}
 }
 
 func (h *SearchHandler) SearchFiles(w http.ResponseWriter, r *http.Request) {
-    userID, ok := r.Context().Value("user_id").(string)
-    if !ok || userID == "" {
+    var req struct {
+        Filename string `json:"filename"`
+        Mime     string `json:"mime"`
+    }
+    fmt.Println("SearchFiles handler invoked")
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        http.Error(w, "invalid request", http.StatusBadRequest)
+        return
+    }
+
+    // ✅ Fix: use "user_id" to match AuthMiddleware
+    uid := r.Context().Value("user_id")
+    userID, ok := uid.(string)
+    if !ok {
         http.Error(w, "unauthorized", http.StatusUnauthorized)
         return
     }
 
-    q := r.URL.Query().Get("q")
-    mime := r.URL.Query().Get("mime")
-    minSize := r.URL.Query().Get("min_size")
-    maxSize := r.URL.Query().Get("max_size")
-    from := r.URL.Query().Get("from")
-    to := r.URL.Query().Get("to")
-
-    files, err := h.Service.SearchFiles(userID, q, mime, minSize, maxSize, from, to)
+    files, err := h.Service.SearchFiles(userID, req.Filename, req.Mime)
     if err != nil {
-        http.Error(w, "db error: "+err.Error(), http.StatusInternalServerError)
+        http.Error(w, "search failed", http.StatusInternalServerError)
         return
     }
 
     w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(files)
+    if err := json.NewEncoder(w).Encode(map[string]interface{}{"files": files}); err != nil {
+        http.Error(w, "failed to encode response", http.StatusInternalServerError)
+        return
+    }
 }

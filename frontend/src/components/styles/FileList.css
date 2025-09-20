@@ -37,6 +37,21 @@
   gap: 10px;
 }
 
+.actions button {
+  background: none;       /* ✅ remove white box */
+  border: none;           /* ✅ remove border */
+  cursor: pointer;
+  font-size: 1.2rem;      /* keep icon size */
+  padding: 6px;
+  border-radius: 6px;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.actions button:hover {
+  background: rgba(255, 255, 255, 0.1); /* subtle glow */
+  transform: scale(1.1);
+}
+
 .btn-share {
   padding: 4px 10px;
   border-radius: 6px;
