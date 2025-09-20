@@ -13,8 +13,8 @@ func NewShareService(repo *repo.ShareRepo) *ShareService {
     return &ShareService{Repo: repo}
 }
 
-func (s *ShareService) CreateShare(fileID, ownerID, visibility string) (string, error) {
-    return s.Repo.CreateShare(fileID, ownerID, visibility)
+func (s *ShareService) CreateShare(fileID, ownerID string) (string, error) {
+    return s.Repo.CreateShare(fileID, ownerID)
 }
 
 func (s *ShareService) ListShares() ([]models.PublicFile, error) {
@@ -22,7 +22,6 @@ func (s *ShareService) ListShares() ([]models.PublicFile, error) {
 }
 
 func (s *ShareService) GetShareByID(id string) (*models.PublicFile, error) {
-    _ = s.Repo.IncrementDownloadCount(id)
     return s.Repo.GetShareByID(id)
 }
 

@@ -3,6 +3,7 @@ import { Routes, Route, useNavigate, NavLink } from "react-router-dom";
 import FileUploadForm from "../components/FileUploadForm";
 import FileList, { type FileItem } from "../components/FileList";
 import SearchFilter from "../components/SearchFilter";
+import PublicFilesPage from "./Public_Files";
 import { useState, useEffect } from "react";
 import { listFiles, deleteFile, generatePublicLink } from "../api/files";
 import { useAuth } from "../context/AuthContext";
@@ -208,7 +209,17 @@ export default function Dashboard() {
                   </div>
                 }
               />
+              <Route
+                path="public"
+                element={
+                  <div>
+                    <h2 className="section-title">Public Files</h2>
+                    <PublicFilesPage />
+                  </div>
+                }
+              />
             </Routes>
+            
           </div>
         </main>
       </div>

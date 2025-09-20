@@ -74,9 +74,17 @@ export default function FileList({
     try {
       if (!token) return;
       const res = await shareFilePublic(id, token);
-      const link = window.location.origin + res.data.link;
+      const link = res.data.link; 
       await navigator.clipboard.writeText(link);
       toast.success("Public link copied to clipboard!");
+      toast.success(
+        (t) => (
+          <span>
+            Link copied! <a href={link} target="_blank" className="underline text-blue-400">Open</a>
+          </span>
+        ),
+        { duration: 5000 }
+      );
     } catch (err) {
       console.error("Share public error:", err);
       toast.error("Failed to share publicly");

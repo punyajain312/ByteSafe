@@ -14,26 +14,28 @@ func NewShareRepo(db *sql.DB) *ShareRepo {
     return &ShareRepo{DB: db}
 }
 
-// Insert new share
-func (r *ShareRepo) CreateShare(fileID, ownerID string, visibility string) (string, error) {
+// Create a new share
+func (r *ShareRepo) CreateShare(fileID, ownerID string) (string, error) {
     id := uuid.New().String()
     _, err := r.DB.Exec(`
-        INSERT INTO public_files (id, file_id, owner_id, visibility, download_count, created_at)
-        VALUES ($1, $2, $3, $4, 0, NOW())
-    `, id, fileID, ownerID, visibility)
+        INSERT INTO public_files (id, file_id, owner_id, download_count, created_at)
+        VALUES ($1, $2, $3, 0, NOW())
+    `, id, fileID, ownerID)
     if err != nil {
         return "", err
     }
     return id, nil
 }
 
-// List all public shares with joined file info
+// List all public shares with file info
 func (r *ShareRepo) ListShares() ([]models.PublicFile, error) {
     rows, err := r.DB.Query(`
-        SELECT pf.id, pf.file_id, pf.owner_id, f.filename, f.mime_type, f.size,
-               pf.visibility, pf.download_count, pf.created_at
+        SELECT pf.id, pf.file_id, pf.owner_id, u.name,
+            f.filename, f.mime_type, f.size,
+            pf.download_count, pf.created_at
         FROM public_files pf
         JOIN files f ON pf.file_id = f.id
+        JOIN users u ON pf.owner_id = u.id  
         ORDER BY pf.created_at DESC
     `)
     if err != nil {
@@ -45,9 +47,9 @@ func (r *ShareRepo) ListShares() ([]models.PublicFile, error) {
     for rows.Next() {
         var pf models.PublicFile
         if err := rows.Scan(
-            &pf.ID, &pf.FileID, &pf.OwnerID,
+            &pf.ID, &pf.FileID, &pf.OwnerID, &pf.OwnerName,
             &pf.Filename, &pf.MimeType, &pf.Size,
-            &pf.Visibility, &pf.DownloadCount, &pf.CreatedAt,
+            &pf.DownloadCount, &pf.CreatedAt,
         ); err != nil {
             return nil, err
         }
@@ -56,18 +58,19 @@ func (r *ShareRepo) ListShares() ([]models.PublicFile, error) {
     return shares, nil
 }
 
+// Get share by ID
 func (r *ShareRepo) GetShareByID(id string) (*models.PublicFile, error) {
     var pf models.PublicFile
     err := r.DB.QueryRow(`
         SELECT pf.id, pf.file_id, pf.owner_id, f.filename, f.mime_type, f.size,
-               pf.visibility, pf.download_count, pf.created_at
+               pf.download_count, pf.created_at
         FROM public_files pf
         JOIN files f ON pf.file_id = f.id
         WHERE pf.id = $1
     `, id).Scan(
         &pf.ID, &pf.FileID, &pf.OwnerID,
         &pf.Filename, &pf.MimeType, &pf.Size,
-        &pf.Visibility, &pf.DownloadCount, &pf.CreatedAt,
+        &pf.DownloadCount, &pf.CreatedAt,
     )
     if err != nil {
         return nil, err
@@ -75,6 +78,7 @@ func (r *ShareRepo) GetShareByID(id string) (*models.PublicFile, error) {
     return &pf, nil
 }
 
+// Increment download count
 func (r *ShareRepo) IncrementDownloadCount(id string) error {
     _, err := r.DB.Exec(`
         UPDATE public_files 

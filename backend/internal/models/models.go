@@ -47,11 +47,6 @@ type UploadResult struct {
     Filename string `json:"filename"`
 }
 
-const (
-    VisibilityPrivate   = "private"
-    VisibilityPublic    = "public"
-    VisibilityRestricted = "restricted"
-)
 
 type Share struct {
     ID            string `json:"id"`
@@ -76,10 +71,10 @@ type PublicFile struct {
     ID            string    `json:"id"`
     FileID        string    `json:"file_id"`
     OwnerID       string    `json:"owner_id"`
+    OwnerName     string    `json:"owner_name"`
     Filename      string    `json:"filename,omitempty"`   // from files join
     MimeType      string    `json:"mime_type,omitempty"`  // from files join
     Size          int64     `json:"size,omitempty"`       // from files join
-    Visibility    string    `json:"visibility"`
     DownloadCount int       `json:"download_count"`
     CreatedAt     time.Time `json:"created_at"`
 }

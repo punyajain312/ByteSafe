@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"balkanid-capstone/internal/services"
@@ -21,7 +20,6 @@ func (h *SearchHandler) SearchFiles(w http.ResponseWriter, r *http.Request) {
         Filename string `json:"filename"`
         Mime     string `json:"mime"`
     }
-    fmt.Println("SearchFiles handler invoked")
     if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
         http.Error(w, "invalid request", http.StatusBadRequest)
         return
