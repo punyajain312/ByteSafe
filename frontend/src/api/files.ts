@@ -17,10 +17,22 @@ export const listFiles = (token: string) =>
   });
 
 export async function searchFiles(filters: any, token: string) {
-  return axios.post(`${API_URL}/search`, filters, {
-    headers: { Authorization: `Bearer ${token}` }
+
+  const payload = {
+    filename: filters.filename || "",
+    mime: filters.mime || "",
+    min_size: Number(filters.min_size) || 0,
+    max_size: Number(filters.max_size) || 0,
+    date_from: filters.date_from || "",
+    date_to: filters.date_to || "",
+    uploader: filters.uploader || "",
+  };
+
+  return axios.post(`${API_URL}/search`, payload, {
+    headers: { Authorization: `Bearer ${token}` },
   });
 }
+
 
 export const deleteFile = (id: string, token: string) =>
   axios.delete(`${API_URL}/delete?id=${id}`, {

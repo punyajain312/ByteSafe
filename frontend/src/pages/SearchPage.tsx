@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SearchFilter from "../components/SearchFilter";
 import "./styles/SearchPage.css";
 
@@ -16,15 +16,16 @@ function formatFileSize(bytes?: number) {
 export default function SearchPage() {
   const [files, setFiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+   useEffect(() => {
+    console.log("🔍 Files state updated:", files);
+  }, [files]);
 
   return (
     <div className="search-container">
       <div className="search-card">
         <h1 className="search-title">Search Files</h1>
 
-        {/* Pass setLoading so SearchFilter can control it */}
         <SearchFilter onResults={setFiles} setLoading={setLoading} />
-
         <div className="results-section">
           <h2 className="results-title">Results</h2>
 

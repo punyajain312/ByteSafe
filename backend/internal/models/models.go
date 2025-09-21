@@ -26,15 +26,16 @@ type User struct {
 }
 
 type File struct {
-    ID        string `json:"id"`
-    Filename  string `json:"filename"`
-    MimeType  string `json:"mime_type"`
-    Size      int64  `json:"size"`
-    CreatedAt string `json:"created_at"`
-    Hash      string `json:"hash"`
-    RefCount  int    `json:"ref_count"`
-    Visibility string   `json:"visibility"`         
+    ID         string   `json:"id"`
+    Filename   string   `json:"filename"`
+    MimeType   string   `json:"mime_type"`
+    Size       int64    `json:"size"`
+    CreatedAt  string   `json:"created_at"`
+    Hash       string   `json:"hash"`
+    RefCount   int      `json:"ref_count"`
+    Visibility string   `json:"visibility"`
     SharedWith []string `json:"shared_with,omitempty"`
+    Uploader   string   `json:"uploader,omitempty"`
 }
 
 type FileBlob struct {

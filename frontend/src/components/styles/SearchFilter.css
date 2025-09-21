@@ -1,13 +1,13 @@
-
 .search-filter {
   background: #0f172a;
   padding: 1.5rem;
+  width: 93%;
   border-radius: 12px;
   border: 1px solid #2a3b6d;
   color: #e2e8f0;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem; /* better spacing */
 }
 
 .filter-title {
@@ -17,37 +17,48 @@
   margin-bottom: 0.5rem;
 }
 
+/* Inputs */
 .filter-input {
-  width: 100%;
-  padding: 0.75rem;
+  width: 95%;
+  padding: 0.85rem 1rem;
   border: 1px solid #2a3b6d;
-  border-radius: 8px;
+  border-radius: 10px;
   background: #1e293b;
   color: #f1f5f9;
+  font-size: 0.95rem;
   outline: none;
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.filter-input::placeholder {
+  color: #9ca3af; /* softer placeholder */
+  font-size: 0.9rem;
 }
 
 .filter-input:focus {
   border-color: #3b82f6;
   background: #111827;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
 }
 
+/* Button */
 .filter-btn {
   width: 100%;
   background: linear-gradient(to right, #3b82f6, #4f46e5);
   color: white;
   font-weight: 600;
-  padding: 0.75rem;
+  padding: 0.9rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: transform 0.2s, opacity 0.2s;
+  font-size: 1rem;
+  transition: transform 0.2s, opacity 0.2s, box-shadow 0.2s;
 }
 
 .filter-btn:hover {
-  transform: scale(1.03);
-  opacity: 0.9;
+  transform: translateY(-2px);
+  opacity: 0.95;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
 .filter-btn:active {

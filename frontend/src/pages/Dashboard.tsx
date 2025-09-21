@@ -4,6 +4,7 @@ import FileUploadForm from "../components/FileUploadForm";
 import FileList, { type FileItem } from "../components/FileList";
 import SearchFilter from "../components/SearchFilter";
 import PublicFilesPage from "./Public_Files";
+import SearchPage from "./SearchPage"; 
 import { useState, useEffect } from "react";
 import { listFiles, deleteFile } from "../api/files";
 import { shareFilePublic, unshareFile, shareFileWithUser } from "../api/public";
@@ -167,7 +168,19 @@ export default function Dashboard() {
             <Routes>
               <Route path="/" element={<FileList files={files} limit={10} onDelete={handleDelete} onSetPrivate={handleSetPrivate} onSetPublic={handleSetPublic} onShareWithUser={handleShareWithUser} />} />
               <Route path="upload" element={<FileUploadForm onUploadSuccess={onUploadSuccess} disabled={totalBytes >= TOTAL_QUOTA_BYTES} />} />
-              <Route path="search" element={<SearchFilter onResults={setSearchResults} />} />
+              <Route path="search" element={<SearchPage />} />
+              <Route
+                path="list"
+                element={
+                  <FileList
+                    files={files}
+                    onDelete={handleDelete}
+                    onSetPrivate={handleSetPrivate}
+                    onSetPublic={handleSetPublic}
+                    onShareWithUser={handleShareWithUser}
+                  />
+                }
+              />
               <Route path="list" element={<FileList files={files} onDelete={handleDelete} onSetPrivate={handleSetPrivate} onSetPublic={handleSetPublic} onShareWithUser={handleShareWithUser} />} />
               <Route path="public" element={<PublicFilesPage />} />
             </Routes>

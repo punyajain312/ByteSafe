@@ -1,8 +1,8 @@
-// src/components/PublicFileList.tsx
 import React from "react";
+import "./styles/PublicFileList.css"; 
 
 export interface PublicFile {
-  id: string;           // share id (public_files.id)
+  id: string;           
   file_id: string;
   owner_id: string;
   filename: string;
@@ -34,36 +34,36 @@ export default function PublicFileList({ files, onDownload }: Props) {
   }
 
   return (
-    <table className="w-full border-collapse">
+    <table className="file-table">
       <thead>
-        <tr className="bg-gray-100">
-          <th className="p-2 text-left border">Name</th>
-          <th className="p-2 text-left border">Type</th>
-          <th className="p-2 text-left border">Size</th>
-          <th className="p-2 text-left border">Uploaded At</th>
-          <th className="p-2 text-left border">Owner</th>
-          <th className="p-2 text-left border">Downloads</th>
-          <th className="p-2 text-left border">Actions</th>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Size</th>
+          <th>Uploaded At</th>
+          <th>Owner</th>
+          <th>Downloads</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         {files.map((file) => (
           <tr key={file.id}>
-            <td className="p-2 border font-medium">{file.filename}</td>
-            <td className="p-2 border">{file.mime_type}</td>
-            <td className="p-2 border">{formatFileSize(file.size)}</td>
-            <td className="p-2 border">
-              {new Date(file.created_at).toLocaleString()}
-            </td>
-            <td className="p-2 border">{file.owner_name || "—"}</td>
-            <td className="p-2 border text-center">{file.download_count}</td>
-            <td className="p-2 border text-center">
-              <button
-                onClick={() => onDownload(file.id)}
-                className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-              >
-                Open / Download
-              </button>
+            <td className="file-name">{file.filename}</td>
+            <td>{file.mime_type}</td>
+            <td>{formatFileSize(file.size)}</td>
+            <td>{new Date(file.created_at).toLocaleString()}</td>
+            <td>{file.owner_name || "—"}</td>
+            <td className="text-center">{file.download_count}</td>
+            <td>
+              <div className="actions">
+                <button
+                  onClick={() => onDownload(file.id)}
+                  className="btn-share"
+                >
+                  Open / Download
+                </button>
+              </div>
             </td>
           </tr>
         ))}

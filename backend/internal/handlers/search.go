@@ -16,32 +16,40 @@ func NewSearchHandler(service *services.SearchService) *SearchHandler {
 }
 
 func (h *SearchHandler) SearchFiles(w http.ResponseWriter, r *http.Request) {
-    var req struct {
-        Filename string `json:"filename"`
-        Mime     string `json:"mime"`
-    }
-    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-        http.Error(w, "invalid request", http.StatusBadRequest)
-        return
-    }
+	var req struct {
+		Filename string `json:"filename"`
+		Mime     string `json:"mime"`
+		MinSize  int64  `json:"min_size"`
+		MaxSize  int64  `json:"max_size"`
+		DateFrom string `json:"date_from"`
+		DateTo   string `json:"date_to"`
+		Uploader string `json:"uploader"`
+	}
 
-    // ✅ Fix: use "user_id" to match AuthMiddleware
-    uid := r.Context().Value("user_id")
-    userID, ok := uid.(string)
-    if !ok {
-        http.Error(w, "unauthorized", http.StatusUnauthorized)
-        return
-    }
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request", http.StatusBadRequest)
+		return
+	}
 
-    files, err := h.Service.SearchFiles(userID, req.Filename, req.Mime)
-    if err != nil {
-        http.Error(w, "search failed", http.StatusInternalServerError)
-        return
-    }
+	uid := r.Context().Value("user_id")
+	userID, ok := uid.(string)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
 
-    w.Header().Set("Content-Type", "application/json")
-    if err := json.NewEncoder(w).Encode(map[string]interface{}{"files": files}); err != nil {
-        http.Error(w, "failed to encode response", http.StatusInternalServerError)
-        return
-    }
+	files, err := h.Service.SearchFiles(
+		userID,
+		req.Filename, req.Mime,
+		req.MinSize, req.MaxSize,
+		req.DateFrom, req.DateTo,
+		req.Uploader,
+	)
+	if err != nil {
+		http.Error(w, "search failed: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{"files": files})
 }

@@ -16,7 +16,6 @@ import (
 )
 
 func main() {
-	// Connect to Postgres
 	dsn := "postgres://postgres:1234@localhost:5432/balkanid?sslmode=disable"
 	database, err := db.Connect(dsn)
 	if err != nil {
@@ -24,7 +23,6 @@ func main() {
 	}
 	defer database.Close()
 
-	// handler -> service -> repo
 	// Auth
 	userRepo := repo.NewUserRepo(database)
 	authService := services.NewAuthService(userRepo)
@@ -50,13 +48,11 @@ func main() {
 	shareService := services.NewShareService(shareRepo)
 	shareHandler := handlers.NewShareHandler(shareService)
 
-	// Other handlers (not refactored yet, still using DB directly)
+	// Stats & Admin
 	statsHandler := &handlers.StatsHandler{DB: database}
 	adminHandler := &handlers.AdminHandler{DB: database}
 
-	// Router
 	mux := http.NewServeMux()
-	// mux.NewRouter();
 
 	// Public routes
 	mux.HandleFunc("/signup", authHandler.Signup)
@@ -68,19 +64,25 @@ func main() {
 	mux.Handle("/delete", middleware.AuthMiddleware(http.HandlerFunc(fileHandler.DeleteFile)))
 	mux.Handle("/search", middleware.AuthMiddleware(http.HandlerFunc(searchHandler.SearchFiles)))
 	mux.Handle("/stats", middleware.AuthMiddleware(http.HandlerFunc(statsHandler.GetStats)))
+
+	// Share routes
 	mux.Handle("/share", middleware.AuthMiddleware(http.HandlerFunc(shareHandler.CreateShare)))
+	mux.Handle("/unshare", middleware.AuthMiddleware(http.HandlerFunc(shareHandler.UnshareFile))) // ✅ fixed
+	mux.Handle("/share/user", middleware.AuthMiddleware(http.HandlerFunc(shareHandler.ShareWithUser)))
+
+	// Visibility route
 	mux.Handle("/files/visibility", middleware.AuthMiddleware(http.HandlerFunc(fileHandler.UpdateVisibility)))
-	// mux.Handle("/unshare", middleware.AuthMiddleware(http.HandlerFunc(shareHandler.Unshare)))
+
+	// Public share routes
 	mux.HandleFunc("/public/list", shareHandler.ListShares)
 	mux.HandleFunc("/public/file", shareHandler.AccessShare)
-	
 
 	// Admin routes
 	mux.Handle("/admin/users", middleware.AuthMiddleware(middleware.AdminOnly(http.HandlerFunc(adminHandler.ListUsers))))
 	mux.Handle("/admin/files", middleware.AuthMiddleware(middleware.AdminOnly(http.HandlerFunc(adminHandler.ListAllFiles))))
 	mux.Handle("/admin/stats", middleware.AuthMiddleware(middleware.AdminOnly(http.HandlerFunc(adminHandler.SystemStats))))
 
-	// Add CORS so frontend can talk to backend
+	// CORS
 	handler := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},

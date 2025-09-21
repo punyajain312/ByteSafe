@@ -1,4 +1,3 @@
-// src/pages/PublicFilesPage.tsx
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { listPublicFiles } from "../api/public";
@@ -29,13 +28,8 @@ export default function PublicFilesPage() {
 
   const handleDownloadClick = async (shareId: string) => {
     try {
-      // Step 1: Increment download count
       await axios.get(`${API_URL}/public/file?id=${shareId}`);
-
-      // Step 2: Refresh list
-      await load();
-
-      // Step 3: Open in new tab
+      await load(); // refresh after download
       window.open(`${API_URL}/public/file?id=${shareId}`, "_blank");
     } catch (err) {
       console.error("error opening public file", err);
@@ -50,7 +44,7 @@ export default function PublicFilesPage() {
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-5xl mx-auto bg-white p-6 rounded shadow">
-        <h1 className="text-2xl font-bold mb-6">🌍 Publicly Shared Files</h1>
+        <h1 className="text-2xl font-bold mb-6">Publicly Shared Files</h1>
         <PublicFileList files={files} onDownload={handleDownloadClick} />
       </div>
     </div>
