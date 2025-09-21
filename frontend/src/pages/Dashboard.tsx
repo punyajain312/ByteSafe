@@ -2,12 +2,12 @@
 import { Routes, Route, useNavigate, NavLink } from "react-router-dom";
 import FileUploadForm from "../components/FileUploadForm";
 import FileList, { type FileItem } from "../components/FileList";
-import SearchFilter from "../components/SearchFilter";
 import PublicFilesPage from "./Public_Files";
 import SearchPage from "./SearchPage"; 
 import { useState, useEffect } from "react";
 import { listFiles, deleteFile } from "../api/files";
 import { shareFilePublic, unshareFile, shareFileWithUser } from "../api/public";
+import { listPublicFiles } from "../api/public"; 
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import "./styles/Dashboard.css";
@@ -17,9 +17,10 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   const [files, setFiles] = useState<FileItem[]>([]);
+  const [publicFiles, setPublicFiles] = useState<any[]>([]); 
   const [refresh, setRefresh] = useState(0);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
 
+  // === Load user files ===
   const loadFiles = async () => {
     if (!token) return;
     try {
@@ -30,16 +31,30 @@ export default function Dashboard() {
     }
   };
 
+  // === Load public files ===
+  const loadPublicFiles = async () => {
+    try {
+      const res = await listPublicFiles();
+      setPublicFiles(res.data.files || res.data);
+    } catch (err) {
+      toast.error("Failed to load public files");
+    }
+  };
+
   useEffect(() => {
     loadFiles();
   }, [token, refresh]);
+
+  useEffect(() => {
+    loadPublicFiles();
+  }, [refresh]);
 
   // === Actions ===
   const handleDelete = async (id: string) => {
     if (!token) return;
     try {
       await deleteFile(id, token);
-      setFiles((prev) => prev.filter((f) => f.id !== id)); // ✅ remove locally
+      setFiles((prev) => prev.filter((f) => f.id !== id));
       toast.success("File deleted");
     } catch {
       toast.error("Delete failed");
@@ -54,6 +69,7 @@ export default function Dashboard() {
         prev.map((f) => (f.id === id ? { ...f, visibility: "private" } : f))
       );
       toast.success("File set to private");
+      loadPublicFiles(); 
     } catch {
       toast.error("Failed to make private");
     }
@@ -69,6 +85,7 @@ export default function Dashboard() {
         prev.map((f) => (f.id === id ? { ...f, visibility: "public" } : f))
       );
       toast.success("File shared publicly. Link copied!");
+      loadPublicFiles(); // ✅ refresh public list
     } catch {
       toast.error("Failed to make public");
     }
@@ -132,8 +149,8 @@ export default function Dashboard() {
         <div className="sidebar-section">
           <h4 className="sidebar-heading">Quick Stats</h4>
           <ul className="stats-list">
-            <li><strong>{totalFiles}</strong> Files</li>
-            <li><strong>{files.filter(f => f.visibility === "public").length}</strong> Public</li>
+            <li><strong>{totalFiles}</strong> My Files</li>
+            <li><strong>{publicFiles.length}</strong> Public</li>
             <li><strong>{files.filter(f => f.visibility === "shared").length}</strong> Shared</li>
           </ul>
         </div>
@@ -181,7 +198,6 @@ export default function Dashboard() {
                   />
                 }
               />
-              <Route path="list" element={<FileList files={files} onDelete={handleDelete} onSetPrivate={handleSetPrivate} onSetPublic={handleSetPublic} onShareWithUser={handleShareWithUser} />} />
               <Route path="public" element={<PublicFilesPage />} />
             </Routes>
           </div>
