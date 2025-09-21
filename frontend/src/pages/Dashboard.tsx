@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { listFiles, deleteFile } from "../api/files";
 import { shareFilePublic, unshareFile, shareFileWithUser } from "../api/public";
 import { listPublicFiles } from "../api/public"; 
+import { shareWithUser, getFileShares } from "../api/public";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import "./styles/Dashboard.css";
@@ -75,34 +76,65 @@ export default function Dashboard() {
     }
   };
 
+  const handleViewSharedUsers = async (id: string) => {
+  if (!token) return;
+  try {
+    const res = await getFileShares(token, id);
+    const users = res.data.map((u: any) => u.shared_with_email);
+
+    if (users.length === 0) {
+      toast("No users shared for this file");
+    } else {
+      // simple alert for now
+      alert("Shared with:\n" + users.join("\n"));
+    }
+  } catch (err) {
+    toast.error("Failed to load shared users");
+  }
+};
+
+
   const handleSetPublic = async (id: string) => {
     if (!token) return;
     try {
-      const res = await shareFilePublic(id, token);
+      const res = await shareFilePublic(id, token); 
       const link = res.data.link;
+
       await navigator.clipboard.writeText(link);
+
       setFiles((prev) =>
         prev.map((f) => (f.id === id ? { ...f, visibility: "public" } : f))
       );
+
       toast.success("File shared publicly. Link copied!");
-      loadPublicFiles(); // ✅ refresh public list
-    } catch {
+      loadPublicFiles(); 
+    } catch (err) {
       toast.error("Failed to make public");
     }
   };
 
+  // const handleShareWithUser = async (id: string, email: string) => {
+  //   if (!token) return;
+  //   try {
+  //     await shareFileWithUser(id, email, token);
+  //     setFiles((prev) =>
+  //       prev.map((f) => (f.id === id ? { ...f, visibility: "shared" } : f))
+  //     );
+  //     toast.success(`Shared with ${email}`);
+  //   } catch {
+  //     toast.error("Failed to share with user");
+  //   }
+  // };
+
   const handleShareWithUser = async (id: string, email: string) => {
-    if (!token) return;
-    try {
-      await shareFileWithUser(id, email, token);
-      setFiles((prev) =>
-        prev.map((f) => (f.id === id ? { ...f, visibility: "shared" } : f))
-      );
-      toast.success(`Shared with ${email}`);
-    } catch {
-      toast.error("Failed to share with user");
-    }
-  };
+  if (!token) return;
+  try {
+    await shareWithUser(token, id, email);
+    toast.success(`File shared with ${email}`);
+  } catch (err) {
+    toast.error("Failed to share with user");
+  }
+};
 
   const onUploadSuccess = () => {
     setRefresh((r) => r + 1);
@@ -183,7 +215,7 @@ export default function Dashboard() {
         <main className="dashboard-content">
           <div className="content-card">
             <Routes>
-              <Route path="/" element={<FileList files={files} limit={10} onDelete={handleDelete} onSetPrivate={handleSetPrivate} onSetPublic={handleSetPublic} onShareWithUser={handleShareWithUser} />} />
+              <Route path="/" element={<FileList files={files} limit={10} onDelete={handleDelete} onSetPrivate={handleSetPrivate} onSetPublic={handleSetPublic} onShareWithUser={handleShareWithUser} onViewSharedUsers={handleViewSharedUsers}/>} />
               <Route path="upload" element={<FileUploadForm onUploadSuccess={onUploadSuccess} disabled={totalBytes >= TOTAL_QUOTA_BYTES} />} />
               <Route path="search" element={<SearchPage />} />
               <Route
@@ -195,6 +227,7 @@ export default function Dashboard() {
                     onSetPrivate={handleSetPrivate}
                     onSetPublic={handleSetPublic}
                     onShareWithUser={handleShareWithUser}
+                    onViewSharedUsers={handleViewSharedUsers}
                   />
                 }
               />

@@ -24,3 +24,34 @@ export const shareFileWithUser = (fileId: string, email: string, token: string) 
 
 // List all public files
 export const listPublicFiles = () => axios.get(`${API_URL}/public/list`);
+
+export const shareWithUser = (token: string, fileId: string, email: string) => {
+  return axios.post(
+    `${API_URL}/partial-public/share`,
+    { file_id: fileId, email },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+};
+
+export const unshareWithUser = (token: string, fileId: string, email: string) => {
+  return axios.delete(
+    `${API_URL}/partial-public/unshare`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+      data: { file_id: fileId, email },
+    }
+  );
+};
+
+export const getFileShares = (token: string, fileId: string) => {
+  return axios.get(
+    `${API_URL}/partial-public/file?id=${fileId}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+};
+
+export const getFilesForUser = (token: string, email: string) => {
+  return axios.get(`${API_URL}/partial-public/user?email=${email}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};

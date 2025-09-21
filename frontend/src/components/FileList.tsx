@@ -18,12 +18,20 @@ type Props = {
   onSetPrivate: (id: string) => Promise<void>;
   onSetPublic: (id: string) => Promise<void>;
   onShareWithUser: (id: string, email: string) => Promise<void>;
+  onViewSharedUsers: (id: string) => Promise<void>; // ✅ new prop
 };
 
-export default function FileList({ files, limit, onDelete, onSetPrivate, onSetPublic, onShareWithUser }: Props) {
+export default function FileList({
+  files,
+  limit,
+  onDelete,
+  onSetPrivate,
+  onSetPublic,
+  onShareWithUser,
+  onViewSharedUsers, 
+}: Props){
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [openVisibility, setOpenVisibility] = useState<string | null>(null);
-  const [email, setEmail] = useState("");
 
   // Ref for dropdown wrapper
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -102,22 +110,17 @@ export default function FileList({ files, limit, onDelete, onSetPrivate, onSetPu
                       <div className="submenu">
                         <button onClick={() => onSetPrivate(file.id)}>Private</button>
                         <button onClick={() => onSetPublic(file.id)}>Open to All</button>
-                        <div className="share-user">
-                          <input
-                            type="email"
-                            placeholder="Enter email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                          />
-                          <button
-                            onClick={() => {
-                              onShareWithUser(file.id, email);
-                              setEmail("");
-                            }}
-                          >
-                            Share
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => {
+                            const userEmail = prompt("Enter email to share with:");
+                            if (userEmail) {
+                              onShareWithUser(file.id, userEmail);
+                            }
+                          }}
+                        >
+                          Share with Specific User
+                        </button>
+                        <button onClick={() => onViewSharedUsers(file.id)}>View Shared Users</button>
                       </div>
                     )}
                   </div>

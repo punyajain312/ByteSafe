@@ -122,3 +122,10 @@ type AdminClaims struct {
 	Role   string `json:"role"`
 	jwt.RegisteredClaims
 }
+
+type PartialPublic struct {
+	ID              string    `db:"id" json:"id"`
+	FileID          string    `db:"file_id" json:"file_id"`
+	SharedWithEmail string    `db:"shared_with_email" json:"shared_with_email"`
+	CreatedAt       time.Time `db:"created_at" json:"created_at"`
+}
