@@ -5,7 +5,8 @@ import FileList, { type FileItem } from "../components/FileList";
 import SearchFilter from "../components/SearchFilter";
 import PublicFilesPage from "./Public_Files";
 import { useState, useEffect } from "react";
-import { listFiles, deleteFile, generatePublicLink } from "../api/files";
+import { listFiles, deleteFile } from "../api/files";
+import { shareFilePublic, unshareFile, shareFileWithUser } from "../api/public";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import "./styles/Dashboard.css";
@@ -32,26 +33,56 @@ export default function Dashboard() {
     loadFiles();
   }, [token, refresh]);
 
+  // === Actions ===
   const handleDelete = async (id: string) => {
     if (!token) return;
     try {
       await deleteFile(id, token);
-      setFiles((prev) => prev.filter((f) => f.id !== id));
+      setFiles((prev) => prev.filter((f) => f.id !== id)); // ✅ remove locally
       toast.success("File deleted");
     } catch {
       toast.error("Delete failed");
     }
   };
 
-  const handleShare = async (id: string) => {
+  const handleSetPrivate = async (id: string) => {
     if (!token) return;
     try {
-      const res = await generatePublicLink(id, token);
-      const link = res.data.link;
-      navigator.clipboard.writeText(link);
-      toast.success("Public link copied!");
+      await unshareFile(id, token);
+      setFiles((prev) =>
+        prev.map((f) => (f.id === id ? { ...f, visibility: "private" } : f))
+      );
+      toast.success("File set to private");
     } catch {
-      toast.error("Failed to generate share link");
+      toast.error("Failed to make private");
+    }
+  };
+
+  const handleSetPublic = async (id: string) => {
+    if (!token) return;
+    try {
+      const res = await shareFilePublic(id, token);
+      const link = res.data.link;
+      await navigator.clipboard.writeText(link);
+      setFiles((prev) =>
+        prev.map((f) => (f.id === id ? { ...f, visibility: "public" } : f))
+      );
+      toast.success("File shared publicly. Link copied!");
+    } catch {
+      toast.error("Failed to make public");
+    }
+  };
+
+  const handleShareWithUser = async (id: string, email: string) => {
+    if (!token) return;
+    try {
+      await shareFileWithUser(id, email, token);
+      setFiles((prev) =>
+        prev.map((f) => (f.id === id ? { ...f, visibility: "shared" } : f))
+      );
+      toast.success(`Shared with ${email}`);
+    } catch {
+      toast.error("Failed to share with user");
     }
   };
 
@@ -63,7 +94,7 @@ export default function Dashboard() {
   // === Storage quota logic ===
   const totalFiles = files.length;
   const totalBytes = files.reduce((acc, f) => acc + (Number((f as any).size) || 0), 0);
-  const TOTAL_QUOTA_BYTES = 15 * 1024 * 1024 * 1024; // 15 GB quota
+  const TOTAL_QUOTA_BYTES = 15 * 1024 * 1024 * 1024;
   const usedPercent = Math.min(100, Math.round((totalBytes / TOTAL_QUOTA_BYTES) * 100));
 
   function formatBytes(bytes: number) {
@@ -75,17 +106,13 @@ export default function Dashboard() {
   }
 
   const handleLogout = () => {
-    try {
-      localStorage.removeItem("token");
-    } catch (e) {
-      console.error(e);
-    }
+    localStorage.removeItem("token");
     navigate("/login");
   };
 
   return (
     <div className="dashboard-root">
-      {/* LEFT SIDEBAR */}
+      {/* SIDEBAR */}
       <aside className="dashboard-sidebar">
         <div className="sidebar-brand">MyApp</div>
 
@@ -105,8 +132,8 @@ export default function Dashboard() {
           <h4 className="sidebar-heading">Quick Stats</h4>
           <ul className="stats-list">
             <li><strong>{totalFiles}</strong> Files</li>
-            <li><strong>{files.filter(f => (f as any).is_public).length}</strong> Public</li>
-            <li><strong>{files.filter(f => (f as any).shared).length}</strong> Shared</li>
+            <li><strong>{files.filter(f => f.visibility === "public").length}</strong> Public</li>
+            <li><strong>{files.filter(f => f.visibility === "shared").length}</strong> Shared</li>
           </ul>
         </div>
 
@@ -114,9 +141,9 @@ export default function Dashboard() {
           <h4 className="sidebar-heading">Recent</h4>
           <ul className="recent-list">
             {files.slice(0, 6).map((f) => (
-              <li key={f.id} title={(f as any).filename}>
-                <span className="recent-name">{(f as any).filename || (f as any).name}</span>
-                <span className="recent-meta">{formatBytes(Number((f as any).size) || 0)}</span>
+              <li key={f.id} title={f.filename}>
+                <span className="recent-name">{f.filename}</span>
+                <span className="recent-meta">{formatBytes(Number(f.size) || 0)}</span>
               </li>
             ))}
             {files.length === 0 && <li className="muted">No recent files</li>}
@@ -124,102 +151,26 @@ export default function Dashboard() {
         </div>
       </aside>
 
-      {/* MAIN AREA */}
+      {/* MAIN */}
       <div className="dashboard-main">
-        {/* TOP NAVBAR */}
         <header className="dashboard-topnav">
-          <NavLink to="/dashboard" end className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>
-            Home
-          </NavLink>
-          <NavLink to="/dashboard/upload" className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>
-            Upload
-          </NavLink>
-          <NavLink to="/dashboard/search" className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>
-            Search
-          </NavLink>
-          <NavLink to="/dashboard/list" className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>
-            My Files
-          </NavLink>
-          <NavLink to="/dashboard/public" className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>
-            Public Files
-          </NavLink>
+          <NavLink to="/dashboard" end className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>Home</NavLink>
+          <NavLink to="/dashboard/upload" className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>Upload</NavLink>
+          <NavLink to="/dashboard/search" className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>Search</NavLink>
+          <NavLink to="/dashboard/list" className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>My Files</NavLink>
+          <NavLink to="/dashboard/public" className={({ isActive }) => isActive ? "btn btn-primary" : "btn"}>Public Files</NavLink>
           <button className="btn logout" onClick={handleLogout}>Logout</button>
         </header>
 
-        {/* CONTENT CARD */}
         <main className="dashboard-content">
           <div className="content-card">
             <Routes>
-              <Route
-                path="/"
-                element={
-                  <div>
-                    <h2 className="section-title">Recent Files</h2>
-                    <FileList files={files} limit={10} onDelete={handleDelete} onShare={handleShare} />
-                  </div>
-                }
-              />
-
-              <Route
-                path="upload"
-                element={
-                  <div>
-                    <h2 className="section-title">Upload Files</h2>
-                    <FileUploadForm
-                      onUploadSuccess={onUploadSuccess}
-                      disabled={totalBytes >= TOTAL_QUOTA_BYTES} // ✅ quota check
-                    />
-                    {totalBytes >= TOTAL_QUOTA_BYTES && (
-                      <p className="text-red-500 mt-2">
-                        You have reached the 15 GB storage limit. Please delete files to free up space.
-                      </p>
-                    )}
-                  </div>
-                }
-              />
-
-              <Route
-                path="search"
-                element={
-                  <div>
-                    <h2 className="section-title">Search Files</h2>
-                    <SearchFilter onResults={setSearchResults} />
-                    {searchResults.length > 0 && (
-                      <div className="mt-4">
-                        <h3 className="font-bold">Search Results</h3>
-                        <ul className="search-results">
-                          {searchResults.map((f, i) => (
-                            <li key={i} className="search-item">
-                              {f.filename} ({f.mime_type}) - {f.size} bytes
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                }
-              />
-
-              <Route
-                path="list"
-                element={
-                  <div>
-                    <h2 className="section-title">My Files</h2>
-                    <FileList files={files} onDelete={handleDelete} onShare={handleShare} />
-                  </div>
-                }
-              />
-              <Route
-                path="public"
-                element={
-                  <div>
-                    <h2 className="section-title">Public Files</h2>
-                    <PublicFilesPage />
-                  </div>
-                }
-              />
+              <Route path="/" element={<FileList files={files} limit={10} onDelete={handleDelete} onSetPrivate={handleSetPrivate} onSetPublic={handleSetPublic} onShareWithUser={handleShareWithUser} />} />
+              <Route path="upload" element={<FileUploadForm onUploadSuccess={onUploadSuccess} disabled={totalBytes >= TOTAL_QUOTA_BYTES} />} />
+              <Route path="search" element={<SearchFilter onResults={setSearchResults} />} />
+              <Route path="list" element={<FileList files={files} onDelete={handleDelete} onSetPrivate={handleSetPrivate} onSetPublic={handleSetPublic} onShareWithUser={handleShareWithUser} />} />
+              <Route path="public" element={<PublicFilesPage />} />
             </Routes>
-            
           </div>
         </main>
       </div>

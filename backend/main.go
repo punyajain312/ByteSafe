@@ -70,6 +70,7 @@ func main() {
 	mux.Handle("/stats", middleware.AuthMiddleware(http.HandlerFunc(statsHandler.GetStats)))
 	mux.Handle("/share", middleware.AuthMiddleware(http.HandlerFunc(shareHandler.CreateShare)))
 	mux.Handle("/files/visibility", middleware.AuthMiddleware(http.HandlerFunc(fileHandler.UpdateVisibility)))
+	// mux.Handle("/unshare", middleware.AuthMiddleware(http.HandlerFunc(shareHandler.Unshare)))
 	mux.HandleFunc("/public/list", shareHandler.ListShares)
 	mux.HandleFunc("/public/file", shareHandler.AccessShare)
 	

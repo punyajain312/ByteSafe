@@ -26,10 +26,12 @@ CREATE TABLE files (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     blob_id UUID NOT NULL REFERENCES file_blobs(id) ON DELETE CASCADE,
     filename TEXT NOT NULL,
+    visibility VARCHAR(200) NOT NULL DEFAULT 'private',
     mime_type TEXT NOT NULL,
     size BIGINT NOT NULL,
     created_at TIMESTAMP DEFAULT NOW()
 );
+
 
 DROP TABLE IF EXISTS public_files CASCADE;
 -- 4. Publicly shared files
@@ -37,7 +39,16 @@ CREATE TABLE IF NOT EXISTS public_files (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     file_id UUID NOT NULL REFERENCES files(id) ON DELETE CASCADE,
     owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    visibility VARCHAR(20) NOT NULL DEFAULT 'public',
+    ref_count INT DEFAULT 1,
     download_count INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+DROP TABLE IF EXISTS file_shares CASCADE;
+
+CREATE TABLE file_shares (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    file_id UUID NOT NULL REFERENCES files(id) ON DELETE CASCADE,
+    shared_with_email TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT NOW()
 );

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { listPublicFiles } from "../api/public";
 import toast from "react-hot-toast";
-import PublicFileList, {type PublicFile } from "../components/PublicFileList";
+import PublicFileList, { type PublicFile } from "../components/PublicFileList";
 
 const API_URL = "http://localhost:8080";
 
@@ -29,10 +29,13 @@ export default function PublicFilesPage() {
 
   const handleDownloadClick = async (shareId: string) => {
     try {
-      // Increment download count
+      // Step 1: Increment download count
       await axios.get(`${API_URL}/public/file?id=${shareId}`);
-      await load(); // refresh after download
-      // Open in new tab
+
+      // Step 2: Refresh list
+      await load();
+
+      // Step 3: Open in new tab
       window.open(`${API_URL}/public/file?id=${shareId}`, "_blank");
     } catch (err) {
       console.error("error opening public file", err);

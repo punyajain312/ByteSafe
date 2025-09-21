@@ -14,7 +14,7 @@ func NewShareHandler(service *services.ShareService) *ShareHandler {
     return &ShareHandler{Service: service}
 }
 
-// POST
+// ✅ POST /share?id=<fileID>
 func (h *ShareHandler) CreateShare(w http.ResponseWriter, r *http.Request) {
     ownerID, ok := r.Context().Value("user_id").(string)
     if !ok || ownerID == "" {
@@ -38,12 +38,13 @@ func (h *ShareHandler) CreateShare(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusCreated)
     json.NewEncoder(w).Encode(map[string]string{
         "share_id": shareID,
-        "link":     "http://localhost:8080/public/file?id=" + shareID, // ✅ full link
+        "link":     "http://localhost:8080/public/file?id=" + shareID,
     })
 }
 
-// DELETE /share?id=<fileID>
-func (h *ShareHandler) RemoveShare(w http.ResponseWriter, r *http.Request) {
+// ✅ POST /unshare?id=<fileID>
+// POST /unshare?id=<fileID>
+func (h *ShareHandler) UnshareFile(w http.ResponseWriter, r *http.Request) {
     ownerID, ok := r.Context().Value("user_id").(string)
     if !ok || ownerID == "" {
         http.Error(w, "unauthorized", http.StatusUnauthorized)
@@ -57,15 +58,42 @@ func (h *ShareHandler) RemoveShare(w http.ResponseWriter, r *http.Request) {
     }
 
     if err := h.Service.RemoveShare(fileID, ownerID); err != nil {
-        http.Error(w, "remove share error: "+err.Error(), http.StatusInternalServerError)
+        http.Error(w, "failed to unshare: "+err.Error(), http.StatusInternalServerError)
         return
     }
 
-    w.WriteHeader(http.StatusOK)
-    json.NewEncoder(w).Encode(map[string]string{"status": "unshared"})
+    json.NewEncoder(w).Encode(map[string]string{
+        "status": "ok",
+        "message": "File unshared successfully",
+    })
 }
 
-// GET
+// POST /share/user
+func (h *ShareHandler) ShareWithUser(w http.ResponseWriter, r *http.Request) {
+    ownerID, ok := r.Context().Value("user_id").(string)
+    if !ok || ownerID == "" {
+        http.Error(w, "unauthorized", http.StatusUnauthorized)
+        return
+    }
+
+    var req struct {
+        FileID string `json:"file_id"`
+        Email  string `json:"email"`
+    }
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        http.Error(w, "invalid request", http.StatusBadRequest)
+        return
+    }
+
+    // 👉 lookup user by email in DB, insert into `shared_files` table (new table needed)
+    // For now, just return success
+    json.NewEncoder(w).Encode(map[string]string{
+        "status": "ok",
+        "message": "File shared with " + req.Email,
+    })
+}
+
+// ✅ GET /public/list
 func (h *ShareHandler) ListShares(w http.ResponseWriter, r *http.Request) {
     shares, err := h.Service.ListShares()
     if err != nil {
@@ -76,10 +104,9 @@ func (h *ShareHandler) ListShares(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(map[string]interface{}{"files": shares})
 }
 
-
+// ✅ GET /public/file?id=<shareID>
 func (h *ShareHandler) AccessShare(w http.ResponseWriter, r *http.Request) {
     id := r.URL.Query().Get("id")
-
     if id == "" {
         http.Error(w, "missing share id", http.StatusBadRequest)
         return
