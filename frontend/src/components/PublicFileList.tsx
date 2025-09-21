@@ -1,4 +1,3 @@
-import React from "react";
 import "./styles/PublicFileList.css"; 
 
 export interface PublicFile {

@@ -1,5 +1,4 @@
-// src/components/FileList.tsx
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./styles/FileList.css";
 
 export interface FileItem {
@@ -26,13 +25,35 @@ export default function FileList({ files, limit, onDelete, onSetPrivate, onSetPu
   const [openVisibility, setOpenVisibility] = useState<string | null>(null);
   const [email, setEmail] = useState("");
 
+  // Ref for dropdown wrapper
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpenMenu(null);
+        setOpenVisibility(null);
+      }
+    }
+
+    if (openMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openMenu]);
+
   const displayed = typeof limit === "number" ? files.slice(0, limit) : files;
 
   if (displayed.length === 0) {
     return <p className="text-gray-500">No files uploaded yet.</p>;
   }
 
-  return (
+   return (
     <table className="file-table">
       <thead>
         <tr>
@@ -47,25 +68,55 @@ export default function FileList({ files, limit, onDelete, onSetPrivate, onSetPu
       <tbody>
         {displayed.map((file) => (
           <tr key={file.id}>
-            <td className="file-name">{file.mime_type?.includes("folder") ? "📁" : "📄"} {file.filename}</td>
+            <td className="file-name">{file.filename}</td>
             <td>{file.mime_type}</td>
             <td>{formatFileSize(file.size)}</td>
             <td>{new Date(file.created_at).toLocaleString()}</td>
             <td>{file.visibility || "private"}</td>
             <td className="actions">
               <div className="dropdown">
-                <button className="menu-btn" onClick={() => setOpenMenu(openMenu === file.id ? null : file.id)}>⋮</button>
+                <button
+                  className="menu-btn"
+                  onClick={() => setOpenMenu(openMenu === file.id ? null : file.id)}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="menu-icon"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle cx="12" cy="5" r="2" />
+                    <circle cx="12" cy="12" r="2" />
+                    <circle cx="12" cy="19" r="2" />
+                  </svg>
+                </button>
+
                 {openMenu === file.id && (
-                  <div className="dropdown-menu">
-                    <button onClick={() => onDelete(file.id)}>🗑 Delete</button>
-                    <button onClick={() => setOpenVisibility(openVisibility === file.id ? null : file.id)}>🔒 Change Visibility ▸</button>
+                  <div className="dropdown-menu" ref={menuRef}>
+                    <button onClick={() => onDelete(file.id)}>Delete</button>
+                    <button onClick={() => setOpenVisibility(openVisibility === file.id ? null : file.id)}>
+                      Change Visibility ▸
+                    </button>
+
                     {openVisibility === file.id && (
                       <div className="submenu">
-                        <button onClick={() => onSetPrivate(file.id)}>🔒 Private</button>
-                        <button onClick={() => onSetPublic(file.id)}>🌍 Open to All</button>
+                        <button onClick={() => onSetPrivate(file.id)}>Private</button>
+                        <button onClick={() => onSetPublic(file.id)}>Open to All</button>
                         <div className="share-user">
-                          <input type="email" placeholder="Enter email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                          <button onClick={() => { onShareWithUser(file.id, email); setEmail(""); }}>📧 Share</button>
+                          <input
+                            type="email"
+                            placeholder="Enter email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                          />
+                          <button
+                            onClick={() => {
+                              onShareWithUser(file.id, email);
+                              setEmail("");
+                            }}
+                          >
+                            Share
+                          </button>
                         </div>
                       </div>
                     )}
