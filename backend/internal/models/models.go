@@ -86,3 +86,39 @@ type PublicStats struct {
     FileID        string `json:"file_id"`
     DownloadCount int    `json:"download_count"`
 }
+
+type AdminFile struct {
+    ID            string    `db:"id" json:"id"`
+    Filename      string    `db:"filename" json:"filename"`
+    UploaderEmail string    `db:"uploader_email" json:"uploader_email"`
+    Size          int64     `db:"size" json:"size"`
+    MimeType      string    `db:"mime_type" json:"mime_type"`
+    CreatedAt     time.Time `db:"created_at" json:"created_at"`
+    DownloadCount int       `db:"download_count" json:"download_count"`
+}
+
+type AdminStats struct {
+    TotalFiles     int `db:"total_files" json:"total_files"`
+    TotalDownloads int `db:"total_downloads" json:"total_downloads"`
+}
+
+type AdminCredentials struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+// Minimal admin user struct (from DB)
+type AdminUser struct {
+	ID           string `db:"id" json:"id"`
+	Name         string `db:"name" json:"name"`
+	Email        string `db:"email" json:"email"`
+	PasswordHash string `db:"password_hash" json:"-"`
+	Role         string `db:"role" json:"role"`
+}
+
+// JWT claims for admins
+type AdminClaims struct {
+	UserID string `json:"user_id"`
+	Role   string `json:"role"`
+	jwt.RegisteredClaims
+}

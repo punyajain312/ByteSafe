@@ -12,3 +12,8 @@ export const fetchFiles = (token: string) =>
   axios.get(`${API_URL}/files`, {
     headers: { Authorization: `Bearer ${token}` },
   });
+
+export async function adminLogin(email: string, password: string) {
+  const response = await axios.post(`${API_URL}/admin/login`, { email, password });
+  return response.data;
+}

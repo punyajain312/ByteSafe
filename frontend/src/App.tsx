@@ -4,6 +4,7 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import Dashboard from "./pages/Dashboard";
+import AdminLoginPage from "./pages/AdminLogin";
 import PublicFilesPage from "./pages/Public_Files";
 import { Toaster } from "react-hot-toast";
 import type { JSX } from "react";
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/home" element={<HomePage />} />
+          <Route path="/admin-login" element={<AdminLoginPage />} />
 
           {/* Dashboard */}
           <Route

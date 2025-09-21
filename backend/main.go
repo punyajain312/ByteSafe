@@ -48,9 +48,11 @@ func main() {
 	shareService := services.NewShareService(shareRepo)
 	shareHandler := handlers.NewShareHandler(shareService)
 
-	// Stats & Admin
-	statsHandler := &handlers.StatsHandler{DB: database}
-	adminHandler := &handlers.AdminHandler{DB: database}
+	// Admin (repo → service → handler)
+	adminRepo := repo.NewAdminRepo(database)
+	adminService := services.NewAdminService(adminRepo)
+	adminAuthHandler := handlers.NewAdminAuthHandler(adminService)
+
 
 	mux := http.NewServeMux()
 
@@ -63,11 +65,10 @@ func main() {
 	mux.Handle("/upload", middleware.AuthMiddleware(http.HandlerFunc(uploadHandler.UploadFile)))
 	mux.Handle("/delete", middleware.AuthMiddleware(http.HandlerFunc(fileHandler.DeleteFile)))
 	mux.Handle("/search", middleware.AuthMiddleware(http.HandlerFunc(searchHandler.SearchFiles)))
-	mux.Handle("/stats", middleware.AuthMiddleware(http.HandlerFunc(statsHandler.GetStats)))
 
 	// Share routes
 	mux.Handle("/share", middleware.AuthMiddleware(http.HandlerFunc(shareHandler.CreateShare)))
-	mux.Handle("/unshare", middleware.AuthMiddleware(http.HandlerFunc(shareHandler.UnshareFile))) // ✅ fixed
+	mux.Handle("/unshare", middleware.AuthMiddleware(http.HandlerFunc(shareHandler.UnshareFile)))
 	mux.Handle("/share/user", middleware.AuthMiddleware(http.HandlerFunc(shareHandler.ShareWithUser)))
 
 	// Visibility route
@@ -78,9 +79,10 @@ func main() {
 	mux.HandleFunc("/public/file", shareHandler.AccessShare)
 
 	// Admin routes
-	mux.Handle("/admin/users", middleware.AuthMiddleware(middleware.AdminOnly(http.HandlerFunc(adminHandler.ListUsers))))
-	mux.Handle("/admin/files", middleware.AuthMiddleware(middleware.AdminOnly(http.HandlerFunc(adminHandler.ListAllFiles))))
-	mux.Handle("/admin/stats", middleware.AuthMiddleware(middleware.AdminOnly(http.HandlerFunc(adminHandler.SystemStats))))
+	mux.HandleFunc("/admin/login", adminAuthHandler.Login)
+	// mux.Handle("/admin/users", middleware.AuthMiddleware(middleware.AdminOnly(http.HandlerFunc(adminHandler.ListUsers))))
+	// mux.Handle("/admin/files", middleware.AuthMiddleware(middleware.AdminOnly(http.HandlerFunc(adminHandler.ListAllFiles))))
+	// mux.Handle("/admin/stats", middleware.AuthMiddleware(middleware.AdminOnly(http.HandlerFunc(adminHandler.SystemStats))))
 
 	// CORS
 	handler := cors.New(cors.Options{

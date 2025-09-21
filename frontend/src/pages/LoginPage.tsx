@@ -34,6 +34,9 @@ export default function LoginPage() {
               <Link to="/signup" className="signup-link">
                 Sign up
               </Link>
+              <br />
+              Login as Admin?{" "}
+              <Link to="/admin-login" className="signup-link">Admin Login</Link>
             </p>
           </div>
         </div>
