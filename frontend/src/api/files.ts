@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8080";
+const API_URL = "http://backend:8080";
 
 export const uploadFiles = (files: File[], token: string) => {
   const formData = new FormData();

@@ -16,13 +16,11 @@ import (
 )
 
 func main() {
-	dsn := "postgres://postgres:1234@localhost:5432/balkanid?sslmode=disable"
-	database, err := db.Connect(dsn)
+	database, err := db.Connect()
 	if err != nil {
-		log.Fatal("DB connection failed:", err)
+		log.Fatalf(" Failed to connect to database: %v", err)
 	}
 	defer database.Close()
-
 	// Auth
 	userRepo := repo.NewUserRepo(database)
 	authService := services.NewAuthService(userRepo)

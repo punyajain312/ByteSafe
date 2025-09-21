@@ -6,7 +6,7 @@ import PublicFilesPage from "./Public_Files";
 import SearchPage from "./SearchPage"; 
 import { useState, useEffect } from "react";
 import { listFiles, deleteFile } from "../api/files";
-import { shareFilePublic, unshareFile, shareFileWithUser } from "../api/public";
+import { shareFilePublic, unshareFile } from "../api/public";
 import { listPublicFiles } from "../api/public"; 
 import { shareWithUser, getFileShares } from "../api/public";
 import { useAuth } from "../context/AuthContext";
