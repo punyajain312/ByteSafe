@@ -53,6 +53,11 @@ func main() {
 	adminService := services.NewAdminService(adminRepo)
 	adminAuthHandler := handlers.NewAdminAuthHandler(adminService)
 
+	// Admin Dashboard
+	adminDashRepo := repo.NewAdminDashRepo(database)
+	adminDashService := services.NewAdminDashService(adminDashRepo)
+	adminDashHandler := handlers.NewAdminDashHandler(adminDashService)
+
 
 	mux := http.NewServeMux()
 
@@ -80,9 +85,9 @@ func main() {
 
 	// Admin routes
 	mux.HandleFunc("/admin/login", adminAuthHandler.Login)
-	// mux.Handle("/admin/users", middleware.AuthMiddleware(middleware.AdminOnly(http.HandlerFunc(adminHandler.ListUsers))))
-	// mux.Handle("/admin/files", middleware.AuthMiddleware(middleware.AdminOnly(http.HandlerFunc(adminHandler.ListAllFiles))))
-	// mux.Handle("/admin/stats", middleware.AuthMiddleware(middleware.AdminOnly(http.HandlerFunc(adminHandler.SystemStats))))
+	mux.Handle("/admin/users", middleware.AuthMiddleware(middleware.AdminOnly(http.HandlerFunc(adminDashHandler.ListUsers))))
+	mux.Handle("/admin/files", middleware.AuthMiddleware(middleware.AdminOnly(http.HandlerFunc(adminDashHandler.ListAllFiles))))
+	mux.Handle("/admin/stats", middleware.AuthMiddleware(middleware.AdminOnly(http.HandlerFunc(adminDashHandler.SystemStats))))
 
 	// CORS
 	handler := cors.New(cors.Options{
