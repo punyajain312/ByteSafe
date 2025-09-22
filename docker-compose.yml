@@ -1,29 +1,40 @@
-version: "3.9"
 services:
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
       - "5173:5173"
     depends_on:
       - backend
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     environment:
       - DB_DSN=postgres://postgres:postgres@db:5432/mydb?sslmode=disable
     depends_on:
-      - db
+      - migrate
+
+  migrate:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     command: >
       sh -c "
-      until nc -z db 5432; do
-        echo '⏳ waiting for postgres...';
-        sleep 2;
-      done;
-      echo '✅ postgres is up - starting backend';
-      ./server
+        until migrate -path /app/migrations -database postgres://postgres:postgres@db:5432/mydb?sslmode=disable up; do
+          echo 'Migration failed, retrying in 5s...'
+          sleep 5
+        done
       "
+    volumes:
+      - ./backend/migrations:/app/migrations   # ✅ correct path
+    depends_on:
+      - db
+    restart: "on-failure"
 
   db:
     image: postgres:14.19
@@ -34,7 +45,9 @@ services:
       POSTGRES_DB: mydb
     volumes:
       - db_data:/var/lib/postgresql/data
-    # no ports section → avoids conflicts
+    # Uncomment if you want to connect from host:
+    # ports:
+    #   - "5432:5432"
 
 volumes:
   db_data:

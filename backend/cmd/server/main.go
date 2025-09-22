@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"fmt"
@@ -15,12 +15,14 @@ import (
 	"github.com/rs/cors"
 )
 
-func main() {
+// RunServer starts the HTTP server
+func RunServer() {
 	database, err := db.Connect()
 	if err != nil {
-		log.Fatalf(" Failed to connect to database: %v", err)
+		log.Fatalf("Failed to connect to database: %v", err)
 	}
 	defer database.Close()
+
 	// Auth
 	userRepo := repo.NewUserRepo(database)
 	authService := services.NewAuthService(userRepo)
@@ -56,11 +58,12 @@ func main() {
 	adminDashService := services.NewAdminDashService(adminDashRepo)
 	adminDashHandler := handlers.NewAdminDashHandler(adminDashService)
 
+	// Partial Public
 	partialPublicRepo := repo.NewPartialPublicRepo(database)
 	partialPublicService := services.NewPartialPublicService(partialPublicRepo)
 	partialPublicHandler := handlers.NewPartialPublicHandler(partialPublicService)
 
-
+	// Router
 	mux := http.NewServeMux()
 
 	// Public routes
@@ -94,8 +97,8 @@ func main() {
 	// Partial Public routes
 	mux.Handle("/partial-public/share", middleware.AuthMiddleware(http.HandlerFunc(partialPublicHandler.ShareFile)))
 	mux.Handle("/partial-public/unshare", middleware.AuthMiddleware(http.HandlerFunc(partialPublicHandler.UnshareFile)))
-	mux.Handle("/partial-public/file", middleware.AuthMiddleware(http.HandlerFunc(partialPublicHandler.GetFileShares))) 
-	mux.Handle("/partial-public/user", middleware.AuthMiddleware(http.HandlerFunc(partialPublicHandler.GetFilesForUser))) 
+	mux.Handle("/partial-public/file", middleware.AuthMiddleware(http.HandlerFunc(partialPublicHandler.GetFileShares)))
+	mux.Handle("/partial-public/user", middleware.AuthMiddleware(http.HandlerFunc(partialPublicHandler.GetFilesForUser)))
 
 	// CORS
 	handler := cors.New(cors.Options{
@@ -105,6 +108,11 @@ func main() {
 		AllowCredentials: true,
 	}).Handler(mux)
 
-	fmt.Println("Server running at http://localhost:8080")
+	fmt.Println("🚀 Server running at http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", handler))
+}
+
+// Keep main() for local dev
+func main() {
+	RunServer()
 }

@@ -3,6 +3,9 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
+import PrivacyPage from "./pages/PrivacyPage";
+import TermsPage from "./pages/TermsPage";
+import ContactPage from "./pages/ContactPage";
 import Dashboard from "./pages/Dashboard";
 import AdminLoginPage from "./pages/AdminLogin";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
@@ -10,6 +13,7 @@ import PublicFilesPage from "./pages/Public_Files";
 import { Toaster } from "react-hot-toast";
 import type { JSX } from "react";
 import "./App.css";
+
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { token } = useAuth();
@@ -26,6 +30,9 @@ export default function App() {
           <Route path="/" element={<Navigate to="/home" replace />} />
 
           {/* Public routes */}
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/home" element={<HomePage />} />

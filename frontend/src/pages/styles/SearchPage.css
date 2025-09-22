@@ -11,7 +11,8 @@
   background: #1b2540;
   padding: 2rem;
   border-radius: 16px;
-  width: 800px;
+  width: 100%;
+  max-width: 800px;
   border: 1px solid #2a3b6d;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
   color: #e2e8f0;
@@ -61,4 +62,57 @@
 
 .results-table tbody tr:hover {
   background: rgba(59, 130, 246, 0.1);
+}
+
+/* ========================== */
+/* Responsive Styling         */
+/* ========================== */
+
+/* Tablet */
+@media (max-width: 768px) {
+  .search-card {
+    padding: 1.5rem;
+  }
+
+  .search-title {
+    font-size: 1.5rem;
+  }
+
+  .results-title {
+    font-size: 1rem;
+  }
+
+  .results-table th,
+  .results-table td {
+    padding: 10px 12px;
+    font-size: 0.95rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .search-container {
+    padding: 2rem 0.5rem;
+  }
+
+  .search-card {
+    padding: 1rem;
+    border-radius: 12px;
+  }
+
+  .search-title {
+    font-size: 1.3rem;
+  }
+
+  .results-table {
+    display: block;
+    overflow-x: auto;   /* allow horizontal scroll */
+    white-space: nowrap;
+    font-size: 0.9rem;
+  }
+
+  .results-table th,
+  .results-table td {
+    padding: 8px 10px;
+  }
 }

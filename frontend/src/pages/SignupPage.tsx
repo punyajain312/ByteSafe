@@ -7,7 +7,7 @@ export default function SignupPage() {
     <div className="login-wrapper">
       {/* Navbar */}
       <nav className="navbar">
-        <div className="navbar-logo">MyApp</div>
+        <div className="navbar-logo">FileVault</div>
         <div className="navbar-auth">
           <Link to="/" className="nav-btn">Home</Link>
           <Link to="/login" className="nav-btn nav-btn-primary">Login</Link>
@@ -17,17 +17,17 @@ export default function SignupPage() {
       <div className="login-container">
         {/* Left creative side */}
         <div className="login-left">
-          <h2 className="creative-heading">Welcome to MyApp 🚀</h2>
+          <h2 className="creative-heading">Join FileVault</h2>
           <p className="creative-text">
-            Manage your files securely, collaborate with ease, and access your
-            dashboard anywhere.
+            A secure, fast, and reliable vault for your files.  
+            Sign up today and take control of your digital world.
           </p>
         </div>
 
-        {/* Right login side */}
+        {/* Right signup form */}
         <div className="login-right">
           <div className="login-card">
-            <h1 className="login-title">Welcome Back</h1>
+            <h1 className="login-title">Create Your Account</h1>
             <SignupForm />
             <p className="login-footer">
               Already have an account?{" "}
