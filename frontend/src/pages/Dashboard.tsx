@@ -164,7 +164,7 @@ export default function Dashboard() {
     <div className="dashboard-root">
       {/* SIDEBAR */}
       <aside className="dashboard-sidebar">
-        <div className="sidebar-brand">MyApp</div>
+        <div className="sidebar-brand">FileVault</div>
 
         <div className="sidebar-section">
           <h4 className="sidebar-heading">Storage</h4>

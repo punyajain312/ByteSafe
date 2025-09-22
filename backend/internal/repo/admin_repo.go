@@ -59,7 +59,7 @@ func (r *adminDashRepo) ListAllFiles() ([]models.AdminFile, error) {
 	}
 	defer rows.Close()
 
-	var files []models.AdminFile
+	files := make([]models.AdminFile, 0)
 	for rows.Next() {
 		var f models.AdminFile
 		if err := rows.Scan(&f.ID, &f.Filename, &f.UploaderEmail, &f.Size, &f.MimeType, &f.CreatedAt, &f.DownloadCount); err != nil {
@@ -67,6 +67,7 @@ func (r *adminDashRepo) ListAllFiles() ([]models.AdminFile, error) {
 		}
 		files = append(files, f)
 	}
+
 	return files, nil
 }
 

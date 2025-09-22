@@ -24,7 +24,7 @@ export default function AdminLoginForm() {
   };
 
   return (
-    <form className="login-form" onSubmit={handleSubmit}>
+    <form className="login-form" onSubmit={handleSubmit} autoComplete="off">
       <label className="input-label">Admin Email</label>
       <input
         type="email"
@@ -33,7 +33,7 @@ export default function AdminLoginForm() {
         onChange={(e) => setEmail(e.target.value)}
       />
 
-      <label className="input-label">Password</label>
+      <label className="input-label" >Password</label>
       <input
         type="password"
         className="input-field"

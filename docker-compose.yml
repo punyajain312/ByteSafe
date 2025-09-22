@@ -31,7 +31,7 @@ services:
         done
       "
     volumes:
-      - ./backend/migrations:/app/migrations   # ✅ correct path
+      - ./backend/migrations:/app/migrations
     depends_on:
       - db
     restart: "on-failure"

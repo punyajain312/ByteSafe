@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://backend:8080";
+const API_URL = "http://localhost:8080";
 
 // Share publicly
 export const shareFilePublic = (fileId: string, token: string) =>

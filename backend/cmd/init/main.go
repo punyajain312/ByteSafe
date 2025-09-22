@@ -5,8 +5,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-
-	server "balkanid-capstone/cmd/server"
 )
 
 func runMigrations(dsn string) error {
@@ -28,6 +26,4 @@ func main() {
 		log.Fatalf("Migration failed: %v", err)
 	}
 	fmt.Println(" Migrations applied successfully")
-
-	server.RunServer()
 }

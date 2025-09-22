@@ -17,17 +17,15 @@ export default function LoginForm() {
     e.preventDefault();
     try {
       const res = await login(email, password);
-      setAuth(res.data.token); // save token in context/localStorage
-      toast.success("Login successful 🎉");
+      setAuth(res.data.token);
       navigate("/dashboard"); 
     } catch (err: any) {
       console.error("Login error:", err);
-      toast.error("Login failed ❌");
     }
   };
 
    return (
-    <form onSubmit={handleSubmit} className="login-form">
+    <form onSubmit={handleSubmit} className="login-form" >
       <SharedInput
         type="email"
         placeholder="Email"

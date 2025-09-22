@@ -2,7 +2,7 @@ import { Routes, Route, NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
-import axios from "axios";
+import { getUsers, getFiles, getStats } from "../../api/admin";
 import "../styles/Dashboard.css";
 import UsersPage from "./AdminUserPage";
 import FilesPage from "./AdminFilesPage";
@@ -46,15 +46,9 @@ export default function AdminDashboard() {
     if (!token) return;
     try {
       const [usersRes, filesRes, statsRes] = await Promise.all([
-        axios.get("http://localhost:8080/admin/users", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get("http://localhost:8080/admin/files", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get("http://localhost:8080/admin/stats", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
+        getUsers(token),
+        getFiles(token),
+        getStats(token),
       ]);
       setUsers(usersRes.data);
       setFiles(filesRes.data);
