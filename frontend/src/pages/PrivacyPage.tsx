@@ -13,7 +13,7 @@ export default function PrivacyPage() {
       <section className="legal-section">
         <h2>Overview</h2>
         <p>
-          FileVault is committed to protecting your privacy. This policy explains
+          ByteSafe is committed to protecting your privacy. This policy explains
           what data we collect, why we collect it, and how you can control it.
         </p>
       </section>
@@ -30,7 +30,7 @@ export default function PrivacyPage() {
       <section className="legal-section">
         <h2>How We Use Your Data</h2>
         <p>
-          We use your data to provide and improve FileVault, secure your files,
+          We use your data to provide and improve ByteSafe, secure your files,
           and communicate important account information. We do not sell your
           personal data.
         </p>

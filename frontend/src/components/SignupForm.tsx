@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import "./styles/LoginForm.css";
 
 export default function SignupForm() {
-  const { login: setAuth } = useAuth();
+  const { setAuth } = useAuth();
   const navigate = useNavigate();
 
   const [name, setName] = useState("");

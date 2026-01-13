@@ -7,7 +7,9 @@ export default function LoginPage() {
     <div className="login-wrapper">
       {/* Navbar */}
       <nav className="navbar">
-        <div className="navbar-logo">FileVault</div>
+        <div>
+          <Link to="/" className="navbar-logo">ByteSafe</Link>
+        </div>
         <div className="navbar-auth">
           <Link to="/" className="nav-btn">Home</Link>
           <Link to="/signup" className="nav-btn nav-btn-primary">Sign Up</Link>
@@ -17,7 +19,7 @@ export default function LoginPage() {
       <div className="login-container">
         {/* Left creative side */}
         <div className="login-left">
-          <h2 className="creative-heading">Welcome Back to FileVault</h2>
+          <h2 className="creative-heading">Welcome Back to ByteSafe</h2>
           <p className="creative-text">
             Access your secure vault, manage your files with ease, and continue 
             collaborating anytime, anywhere.

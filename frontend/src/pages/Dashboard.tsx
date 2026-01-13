@@ -1,9 +1,10 @@
 // src/pages/Dashboard.tsx
-import { Routes, Route, useNavigate, NavLink } from "react-router-dom";
+import { Routes, Route, useNavigate, NavLink, Link } from "react-router-dom";
 import FileUploadForm from "../components/FileUploadForm";
 import FileList, { type FileItem } from "../components/FileList";
 import PublicFilesPage from "./Public_Files";
 import SearchPage from "./SearchPage"; 
+import { bulkFileAction } from "../api/files";
 import { useState, useEffect } from "react";
 import { listFiles, deleteFile } from "../api/files";
 import { shareFilePublic, unshareFile } from "../api/public";
@@ -113,18 +114,34 @@ export default function Dashboard() {
     }
   };
 
-  // const handleShareWithUser = async (id: string, email: string) => {
-  //   if (!token) return;
-  //   try {
-  //     await shareFileWithUser(id, email, token);
-  //     setFiles((prev) =>
-  //       prev.map((f) => (f.id === id ? { ...f, visibility: "shared" } : f))
-  //     );
-  //     toast.success(`Shared with ${email}`);
-  //   } catch {
-  //     toast.error("Failed to share with user");
-  //   }
-  // };
+  const handleBulkAction = async (
+  fileIds: string[],
+  action: "delete" | "public" | "private"
+) => {
+  if (!token || fileIds.length === 0) return;
+
+  try {
+    await bulkFileAction(token, fileIds, action);
+
+    if (action === "delete") {
+      setFiles(prev => prev.filter(f => !fileIds.includes(f.id)));
+      toast.success(`${fileIds.length} files deleted`);
+    } else {
+      setFiles(prev =>
+        prev.map(f =>
+          fileIds.includes(f.id)
+            ? { ...f, visibility: action }
+            : f
+        )
+      );
+      toast.success(`Files updated to ${action}`);
+    }
+
+    setRefresh(r => r + 1); // 🔑 sync backend state
+  } catch {
+    toast.error("Bulk action failed");
+  }
+};
 
   const handleShareWithUser = async (id: string, email: string) => {
   if (!token) return;
@@ -164,7 +181,11 @@ export default function Dashboard() {
     <div className="dashboard-root">
       {/* SIDEBAR */}
       <aside className="dashboard-sidebar">
-        <div className="sidebar-brand">FileVault</div>
+        <div className="sidebar-brand">
+          <Link to="/dashboard" className="navbar-logo">
+            ByteSafe
+          </Link>
+        </div>
 
         <div className="sidebar-section">
           <h4 className="sidebar-heading">Storage</h4>
@@ -215,7 +236,7 @@ export default function Dashboard() {
         <main className="dashboard-content">
           <div className="content-card">
             <Routes>
-              <Route path="/" element={<FileList files={files} limit={10} onDelete={handleDelete} onSetPrivate={handleSetPrivate} onSetPublic={handleSetPublic} onShareWithUser={handleShareWithUser} onViewSharedUsers={handleViewSharedUsers}/>} />
+              <Route path="/" element={<FileList files={files} limit={10} onDelete={handleDelete} onSetPrivate={handleSetPrivate} onSetPublic={handleSetPublic} onShareWithUser={handleShareWithUser} onViewSharedUsers={handleViewSharedUsers} onBulkAction={handleBulkAction}/>} />
               <Route path="upload" element={<FileUploadForm onUploadSuccess={onUploadSuccess} disabled={totalBytes >= TOTAL_QUOTA_BYTES} />} />
               <Route path="search" element={<SearchPage />} />
               <Route
@@ -228,6 +249,7 @@ export default function Dashboard() {
                     onSetPublic={handleSetPublic}
                     onShareWithUser={handleShareWithUser}
                     onViewSharedUsers={handleViewSharedUsers}
+                    onBulkAction={handleBulkAction}
                   />
                 }
               />

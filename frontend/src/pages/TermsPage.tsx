@@ -13,7 +13,7 @@ export default function TermsPage() {
       <section className="legal-section">
         <h2>Acceptance</h2>
         <p>
-          By using FileVault you agree to these Terms. Please do not use the
+          By using ByteSafe you agree to these Terms. Please do not use the
           service if you disagree.
         </p>
       </section>
@@ -29,7 +29,7 @@ export default function TermsPage() {
       <section className="legal-section">
         <h2>Content & Storage</h2>
         <p>
-          You retain ownership of your files. FileVault provides storage and
+          You retain ownership of your files. ByteSafe provides storage and
           related features under these Terms. We may remove content that
           violates policies or law.
         </p>
@@ -38,7 +38,7 @@ export default function TermsPage() {
       <section className="legal-section">
         <h2>Limitation of Liability</h2>
         <p>
-          FileVault will make reasonable efforts to keep the service available
+          ByteSafe will make reasonable efforts to keep the service available
           but is not liable for data loss except as separately agreed in writing.
         </p>
       </section>

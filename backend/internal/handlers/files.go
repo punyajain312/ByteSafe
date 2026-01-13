@@ -1,10 +1,11 @@
 package handlers
 
 import (
-    "encoding/json"
-    "net/http"
+	"encoding/json"
+	"net/http"
 
-    "balkanid-capstone/internal/services"
+	"balkanid-capstone/internal/models"
+	"balkanid-capstone/internal/services"
 )
 
 type FileHandler struct {
@@ -79,4 +80,47 @@ func (h *FileHandler) UpdateVisibility(w http.ResponseWriter, r *http.Request) {
     }
 
     json.NewEncoder(w).Encode(map[string]string{"status": "updated"})
+}
+
+func (h *FileHandler) BulkAction(w http.ResponseWriter, r *http.Request) {
+    userID, ok := r.Context().Value("user_id").(string)
+    if !ok || userID == "" {
+        http.Error(w, "unauthorized", http.StatusUnauthorized)
+        return
+    }
+
+    var req models.BulkActionRequest
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        http.Error(w, "invalid request", http.StatusBadRequest)
+        return
+    }
+
+    if len(req.FileIDs) == 0 {
+        http.Error(w, "no files selected", http.StatusBadRequest)
+        return
+    }
+
+    var err error
+
+    switch req.Action {
+    case "public":
+        err = h.Service.BulkUpdateVisibility(userID, req.FileIDs, "public")
+    case "private":
+        err = h.Service.BulkUpdateVisibility(userID, req.FileIDs, "private")
+    case "delete":
+        err = h.Service.BulkDelete(userID, req.FileIDs)
+    default:
+        http.Error(w, "invalid action", http.StatusBadRequest)
+        return
+    }
+
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    w.WriteHeader(http.StatusOK)
+    json.NewEncoder(w).Encode(map[string]string{
+        "status": "success",
+    })
 }

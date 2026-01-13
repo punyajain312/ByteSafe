@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS file_shares CASCADE;
+DROP TABLE IF EXISTS file_shares;
 
 CREATE TABLE file_shares (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

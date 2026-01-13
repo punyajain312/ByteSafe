@@ -46,6 +46,19 @@
   text-align: left;
 }
 
+.legal-footer link {
+  display: block;
+  color: #94a3b8;
+  margin-bottom: 0.6rem;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.footer-column a:hover {
+  color: #60a5fa;
+}
+
 .contact-form-wrapper {
   display: flex;
   flex-direction: column;

@@ -22,7 +22,7 @@ export default function ContactPage() {
   return (
     <main className="legal-page">
       <header className="legal-header">
-        <h1>Contact FileVault</h1>
+        <h1>Contact ByteSafe</h1>
         <p className="legal-sub">We’d love to help — drop us a note.</p>
       </header>
 
@@ -72,7 +72,7 @@ export default function ContactPage() {
             </div>
 
             <p className="contact-alt">
-              Or email us directly at <a href="mailto:support@filevault.example">support@filevault.example</a>
+              Or email us directly at <a href="mailto:support@bytesafe.example">support@bytesafe.example</a>
             </p>
           </form>
         )}

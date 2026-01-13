@@ -3,11 +3,10 @@ import { login } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
 import SharedInput from "./SharedInput";
 import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
 import "./styles/LoginForm.css";
 
 export default function LoginForm() {
-  const { login: setAuth } = useAuth();
+  const { setAuth } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");

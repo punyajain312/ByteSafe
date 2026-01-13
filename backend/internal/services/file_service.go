@@ -58,3 +58,16 @@ func (s *FileService) UpdateVisibility(fileID, visibility string) error {
 func (s *FileService) ShareWithUser(fileID, email string) error {
     return s.Repo.ShareWithUser(fileID, email)
 }
+
+func (s *FileService) BulkUpdateVisibility(userID string, fileIDs []string, visibility string) error {
+    return s.Repo.BulkUpdateVisibility(userID, fileIDs, visibility)
+}
+
+func (s *FileService) BulkDelete(userID string, fileIDs []string) error {
+    for _, fileID := range fileIDs {
+        if err := s.DeleteFile(userID, fileID); err != nil {
+            return err
+        }
+    }
+    return nil
+}

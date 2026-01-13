@@ -4,7 +4,11 @@ import { listPublicFiles } from "../api/public";
 import toast from "react-hot-toast";
 import PublicFileList, { type PublicFile } from "../components/PublicFileList";
 
-const API_URL = "http://localhost:8080";
+const API_URL = import.meta.env.VITE_API_BASE_URL;
+
+if (!API_URL) {
+  throw new Error("VITE_API_BASE_URL is not defined");
+}
 
 export default function PublicFilesPage() {
   const [files, setFiles] = useState<PublicFile[]>([]);

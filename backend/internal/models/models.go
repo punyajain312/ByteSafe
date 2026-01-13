@@ -129,3 +129,8 @@ type PartialPublic struct {
 	SharedWithEmail string    `db:"shared_with_email" json:"shared_with_email"`
 	CreatedAt       time.Time `db:"created_at" json:"created_at"`
 }
+
+type BulkActionRequest struct {
+    FileIDs []string `json:"file_ids"`
+    Action  string   `json:"action"` // "delete" | "public" | "private"
+}

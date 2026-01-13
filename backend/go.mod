@@ -1,6 +1,6 @@
 module balkanid-capstone
 
-go 1.25.1
+go 1.25.0
 
 require (
 	github.com/gin-gonic/gin v1.11.0
@@ -23,6 +23,7 @@ require (
 	github.com/go-playground/validator/v10 v10.27.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/goccy/go-yaml v1.18.0 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
