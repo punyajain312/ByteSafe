@@ -58,24 +58,22 @@ Core features are implemented, with several enhancements planned to improve usab
 ### Authentication & Security
 - [ ] Improve **Login & Signup UI/UX** with smooth transitions
 - [ ] Add **OAuth authentication** (Google / GitHub)
-- [ ] Implement **Admin authentication & role-based access**
-- [ ] Improve session & token handling
+- [x] Improve session & token handling
 
 ---
 
 ### File Management
 - [ ] Prevent **duplicate file uploads** using file hash comparison
 - [ ] Add **Download option** in “My Files”
-- [ ] Implement **file filtering** (type, size, date, visibility)
+- [x] Implement **file filtering** (type, size, date, visibility)
 - [ ] Upload files to a **cloud storage provider**
-- [ ] Improve file reference counting logic
 
 ---
 
 ### File Sharing & Visibility
 - [ ] Fix **Shared → Private** visibility transition
 - [ ] Treat **Shared** as a first-class visibility state
-- [ ] Add **share with specific users** functionality
+- [x] Add **share with specific users** functionality
 - [ ] Create **“Shared With You”** section
 - [ ] Display users with whom a file is shared
 
@@ -93,7 +91,7 @@ Core features are implemented, with several enhancements planned to improve usab
 - [ ] Redesign Login & Signup hero layout
 - [ ] Improve animations and transitions
 - [ ] Enhance file list UI
-- [ ] Create professional **Footer pages**:
+- [x] Create professional **Footer pages**:
   - Privacy Policy
   - Terms & Conditions
   - About
